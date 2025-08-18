@@ -8,6 +8,11 @@ One thing....  the fancy AI tools like cursor won't work in space,  so you will 
 
 
 ## Exercise 1
+To start rocket running, write a program (in file 0) which writes the value 123 into file 1. 
+
+
+
+## Exercise 2
 Write a program to add 1 to a number.
 
 Steps:
