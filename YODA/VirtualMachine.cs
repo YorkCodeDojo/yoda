@@ -19,62 +19,96 @@ public class VirtualMachine
     private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
     private int _instructionPointer = 0;
+
+    private string _folder = ".";
     
-    public async Task Run()
+    public async Task Run(string folderPath)
     {
-        Array.Fill(_memory,(byte)0);
-        var fileContents = await File.ReadAllBytesAsync(FilenameFromFileNumber(0));
-        if (fileContents.Length > _memory.Length)
-            throw new Exception("File too large");
-        fileContents.CopyTo(_memory, 0);
-        _instructionPointer = 0;
+        _folder = folderPath;
+        
+        await Initialise();
 
         var halted = false;
         while (!halted)
         {
             var operand = _memory[_instructionPointer];
-            switch (operand)
+            try
             {
-                case Command.Halt:
-                    halted = true;
-                    break;
-                case Command.LoadFromFile:
-                    await LoadFromFile();
-                    break;
-                case Command.SaveToFile:
-                    await SaveToFile();
-                    break;
-                case Command.Write:
-                    Write();
-                    break;
-                case Command.Inc:
-                    Inc();
-                    break;
-                case Command.Dec:
-                    Dec();
-                    break;
-                case Command.Nop:
-                    Nop();
-                    break;
-                case Command.JumpIfZero:
-                    JumpIfZero();
-                    break;
-                case Command.Add:
-                    throw new Exception("Due to lack of time this method has not been implemented");
-                default:
-                    throw new Exception("Unknown command " + operand);
+                switch (operand)
+                {
+                    case Command.Halt:
+                        halted = true;
+                        break;
+                    case Command.LoadFromFile:
+                        await LoadFromFile();
+                        break;
+                    case Command.SaveToFile:
+                        await SaveToFile();
+                        break;
+                    case Command.Write:
+                        Write();
+                        break;
+                    case Command.Inc:
+                        Inc();
+                        break;
+                    case Command.Dec:
+                        Dec();
+                        break;
+                    case Command.Nop:
+                        Nop();
+                        break;
+                    case Command.JumpIfZero:
+                        JumpIfZero();
+                        break;
+                    case Command.Add:
+                        throw new Exception("Due to lack of time this method has not been implemented");
+                    default:
+                        throw new Exception("Unknown command " + operand);
+                }
             }
-            
+            catch (Exception e)
+            {
+                await Console.Error.WriteLineAsync($"Your program has crashed,  things aren't looking to good for the space craft.\n");
+                await Console.Error.WriteLineAsync($"{e.Message}");
+                await Console.Error.WriteLineAsync($"Instruction Pointer: {_instructionPointer}");
+                await Console.Error.WriteLineAsync($"Operand: {operand}\n");
+                await File.WriteAllBytesAsync("crash_dump", _memory);
+                await Console.Error.WriteLineAsync($"A crash dump containing all the memory has been written to : ./crash_dump");
+                return;
+            }
         }
     }
 
-    private static string FilenameFromFileNumber(byte fileNumber)
+    private async Task Initialise()
     {
-        if (fileNumber < 8)
-            return $"/Users/davidbetteridge/SimpleInstructionMachine/Files/{fileNumber}";
-        if (fileNumber < 16)
-            return $"/Users/davidbetteridge/SimpleInstructionMachine/Files/{fileNumber}.txt";
-        throw new Exception("Unknown file " + fileNumber);
+        Array.Fill(_memory,(byte)0);
+        _instructionPointer = 0;
+
+        var filename = FilenameFromFileNumber(0);
+        if (File.Exists(filename))
+        {
+            var fileContents = await File.ReadAllBytesAsync(filename);
+            if (fileContents.Length > _memory.Length)
+                throw new Exception($"The initial file is too large. It is {fileContents.Length} bytes long,  which exceeds the maximum allowed of {_memory.Length} bytes");
+
+            fileContents.CopyTo(_memory, 0);
+            
+            Console.WriteLine($"\nMemory has been initialised using {filename}.");
+        }
+        else
+        {
+            Console.WriteLine("\nNo memory initialisation file found.");
+        }
+    }
+
+    private string FilenameFromFileNumber(byte fileNumber)
+    {
+        return fileNumber switch
+        {
+            < 8 => Path.Combine(_folder, $"{fileNumber}"),
+            < 16 => Path.Combine(_folder, $"{fileNumber}.txt"),
+            _ => throw new Exception($"Unknown file {fileNumber}.  Binary files are between 0 and 7.   Text files are between 8 and 15")
+        };
     }
     
     /// <summary>
