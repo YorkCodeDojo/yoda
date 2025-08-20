@@ -11,10 +11,12 @@ public class VirtualMachine
         public const byte Add = 4;
         public const byte Inc = 5;
         public const byte Dec = 6;
+        public const byte Nop = 7;
+        public const byte JumpIfZero = 8;
     }
     
     
-    private readonly byte[] _memory = new byte[1024];
+    private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
     private int _instructionPointer = 0;
     
@@ -50,6 +52,12 @@ public class VirtualMachine
                     break;
                 case Command.Dec:
                     Dec();
+                    break;
+                case Command.Nop:
+                    Nop();
+                    break;
+                case Command.JumpIfZero:
+                    JumpIfZero();
                     break;
                 case Command.Add:
                     throw new Exception("Due to lack of time this method has not been implemented");
@@ -118,13 +126,12 @@ public class VirtualMachine
     private void Inc()
     {
         var location = _memory[_instructionPointer + 1];
-        Console.WriteLine("Inc " +  _memory[location]);
         _memory[location]++;
         _instructionPointer += 2;
     }
     
     /// <summary>
-    /// Inc [Location]
+    /// Dec [Location]
     /// </summary>
     private void Dec()
     {
@@ -133,5 +140,37 @@ public class VirtualMachine
         _instructionPointer += 2;
     }
     
-    private byte ValueAt(int location) => _memory[_memory[location]];
+    /// <summary>
+    /// Nop
+    /// </summary>
+    private void Nop()
+    {
+        _instructionPointer++;
+    }
+
+    /// <summary>
+    /// JumoIfZero [Location] Address
+    /// </summary>
+    private void JumpIfZero()
+    {
+        var value = ValueAt(_instructionPointer + 1);
+        var address = _memory[_instructionPointer + 2];
+
+        if (value == 0)
+            _instructionPointer = address;
+        else
+            _instructionPointer += 3;
+    }
+
+    private byte ValueAt(int location)
+    {
+        if (location >= _memory.Length)
+            throw new Exception("Illegal memory location " + location);
+
+        var reference = _memory[location];
+        if (reference >= _memory.Length)
+            throw new Exception("Illegal de-referenced memory location " + location);
+        
+        return  _memory[reference];
+    } 
 }
