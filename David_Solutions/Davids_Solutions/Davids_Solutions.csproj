@@ -5,7 +5,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Exercise1</RootNamespace>
+        <RootNamespace>Davids_Solutions</RootNamespace>
     </PropertyGroup>
 
 </Project>

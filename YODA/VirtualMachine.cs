@@ -97,6 +97,9 @@ public partial class VirtualMachine
 
                         break;
                 }
+                
+                Console.WriteLine("\n\nProgram completed successfully");
+                
             }
             catch (Exception e)
             {
@@ -104,8 +107,23 @@ public partial class VirtualMachine
                 await Console.Error.WriteLineAsync($"{e.Message}");
                 await Console.Error.WriteLineAsync($"Instruction Pointer: {_instructionPointer}");
                 await Console.Error.WriteLineAsync($"Opcode: {opCode}\n");
+                
+                // Dump as bytes
                 await File.WriteAllBytesAsync("crash_dump", _memory);
-                await Console.Error.WriteLineAsync($"A crash dump containing all the memory has been written to : ./crash_dump");
+
+                // Dump as text
+                await using var textFile = File.CreateText("crash_dump.txt");
+                for (var i = 0; i < _memory.Length; i++)
+                {
+                    if (i == _instructionPointer)
+                        await textFile.WriteLineAsync($"{i:X2}   {_memory[i]}    <---- INSTRUCTION POINTER");
+                    else
+                        await textFile.WriteLineAsync($"{i:X2}   {_memory[i]}");
+                }
+
+                await textFile.FlushAsync();                    
+                
+                await Console.Error.WriteLineAsync($"A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt");
                 return;
             }
         }
@@ -116,20 +134,20 @@ public partial class VirtualMachine
         Array.Fill(_memory,(byte)0);
         _instructionPointer = 0;
 
-        var filename = FilenameFromFileNumber(0);
+        var filename = Path.Combine(_folder, "boot");
         if (File.Exists(filename))
         {
             var fileContents = await File.ReadAllBytesAsync(filename);
             if (fileContents.Length > _memory.Length)
-                throw new Exception($"The initial file is too large. It is {fileContents.Length} bytes long,  which exceeds the maximum allowed of {_memory.Length} bytes");
+                throw new Exception($"The boot file is too large. It is {fileContents.Length} bytes long,  which exceeds the maximum allowed of {_memory.Length} bytes");
 
             fileContents.CopyTo(_memory, 0);
             
-            Console.WriteLine($"\nMemory has been initialised using {filename}.");
+            Console.WriteLine($"\nMemory has been initialised using the boot file ({filename}).");
         }
         else
         {
-            Console.WriteLine("\nNo memory initialisation file found.");
+            Console.WriteLine("\nNo boot file found.");
         }
     }
 
