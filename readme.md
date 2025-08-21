@@ -19,7 +19,7 @@ For such an important task,  the machine is actually pretty basic.
 i.e. If the boot file contains the bytes 1 2 3,  then the first three memory locations will be populated with 1, 2 and 3.  The remaining 253 bytes
 will be initialised with zeros.
 
-* Each command consists of an opcode and between 0 and 4 operands.  Opcodes and Operands are always 1 byte.
+* Each command consists of an opcode and between 0 and 4 operands.  Opcodes and Operands are always 1 byte each.
 e.g.
 The halt command (which causes the machine to stop) is defined by the opcode 0x0 and has no operands
 The add command is defined by the opcode 0x???? and is then followed by three operands.  The two numbers to add and the location for the result.
@@ -29,20 +29,32 @@ After the command is executed,  the instruction pointer is incremented by the le
 
 The exception to this is JUMP commands which allow the instruction pointer to be changed to a specified address
 
+* Input and Output to the machine is done by read/writing the memory to a file.  16 files (0-15) are available.  All the files are identical
+but files 8-15 are given a .txt file extension.
 
+* There are two ways of providing the values for the operands.  Immediate Addressing and Memory Addressing.   This is best explained by an example.
 
+For the immediate version of ADD,  then `ADD 10 20 5` means take the numbers 10 and 20 add them together and place the total in memory location 5
+For the memory version of ADD, then `ADD 10 20 5` means take the value in memory location 10 and add it to the value in memory location 20.  Then write the total to the memory location
+specified by the value in memory location 5
 
+Each command has several opcodes,  depending on which opcodes you wish to be IMMEDIATE or MEMORY addressing
 
 
 
 Example File
 For example,  if the first 5 bytes of boot file contained
 
-?? 2 3 5 0
+IP
+?? 02 07 05 00 
 
-Then the numbers 2 and 3 would be added together placed in memory location 0x5
+Then the instruction pointers starts at 0x00 which contains the ADD command.  The numbers 2 and 7 are added together
+and placed into memory location 5.  The instruction pointer then advances 4 bytes to location 0x04
 
+            IP 
+?? 02 07 05 00 09
 
+Location 0x04 contains a 0 which is the halt command so then the program exits.
 
 
 
@@ -54,14 +66,14 @@ capable of running a program.
 The simplest program you can write is one which does nothing and stops straight away.  This can be done by 
 having your program just contain the halt command.  
 
-Populate the boot file with a single byte with the value 0 (0 is the op code for halt)
+Populate the boot file with a single byte with the value 0x00 (0 is the op code for halt)
 
 Run the virtual machine and check it runs without an error.
 
 
 ## Exercise 2
 We also need to check that the machine is correctly reporting errors.  The easiest way to crash the machine is to
-get it an op code it doesn't understand.   For example 255
+get it an opcode it doesn't understand.   For example 255 (0xFF)
 
 Run the virtual machine and check it gives you an error.  It should also create a couple of crash_dump files to aid you with your troubleshooting.
 
@@ -77,8 +89,19 @@ Your program should consist of the
 Run the virtual machine, and check that File0 is correctly populated with your 5 values
 
 
-
 ## Exercise 4
+Oh!! the spacecraft didn't launch.  After a long root cause analysis meeting it was determined that you created the wrong type of file
+and also the message you were told wasn't correct.
+
+Rather than creating a binary file with the countdown sequence you were meant to create a human-readable text file with the text
+"5 4 3 2 1 LIFTOFF"
+
+Use file 9 instead of file 0.  Once you have created your file open it in a text editor to check it displays corrected.
+
+Hint...  ASCII
+
+
+## Exercise 5
 We need to keep track of how much fuel the craft is using.   Starting with a value of 123 in File1,  write a program that
 each time it runs,  decreases the value in File1 by 1
 
@@ -109,10 +132,14 @@ Flight Centre,
 
 
 
+## Exercise 6
+
+Add 2 numbers
 
 
+## Exercise 7
 
-
+Subtract 2 numbers
 
 
 
