@@ -1,20 +1,42 @@
+// ReSharper disable InconsistentNaming
 namespace SimpleInstructionMachine;
 
-public class VirtualMachine
+public partial class VirtualMachine
 {
-    private static class Command
+    private static class Mask
     {
-        public const byte Halt = 0;
-        public const byte LoadFromFile = 1;
-        public const byte SaveToFile = 2;
-        public const byte Write = 3;
-        public const byte Add = 4;
-        public const byte Inc = 5;
-        public const byte Dec = 6;
-        public const byte Nop = 7;
-        public const byte JumpIfZero = 8;
+        public const byte SaveToFile = 0b0001;
+        public const byte LoadFromFile = 0b0010;
+    }
+
+    private static class OpCode
+    {
+        public const byte Halt = 0b0000_0000;   // 00
+        
+        public const byte SaveToFileMMM = 0b0001_0000;  //16
+        public const byte SaveToFileMMI = 0b0001_0001;  //17
+        public const byte SaveToFileMIM = 0b0001_0010;  //18
+        public const byte SaveToFileMII = 0b0001_0011;  //19
+        public const byte SaveToFileIMM = 0b0001_0100;  //20
+        public const byte SaveToFileIMI = 0b0001_0101;  //21
+        public const byte SaveToFileIIM = 0b0001_0110;  //22
+        public const byte SaveToFileIII = 0b0001_0111;  //23
+        
+        public const byte LoadFromFileMM = 0b0010_0000;  //32
+        public const byte LoadFromFileMI = 0b0010_0001;  //33
+        public const byte LoadFromFileIM = 0b0010_0010;  //34
+        public const byte LoadFromFileII = 0b0010_0011;  //35
+        
+        public const byte Write = 0xA3;
+        public const byte Add = 0xA4;
+        public const byte Inc = 0xA5;
+        public const byte Dec = 0xA6;
+        public const byte Nop = 0xA7;
+        public const byte JumpIfZero = 0xA8;
+        public const byte Copy = 0xA9;
     }
     
+
     
     private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
@@ -24,6 +46,7 @@ public class VirtualMachine
     
     public async Task Run(string folderPath)
     {
+        
         _folder = folderPath;
         
         await Initialise();
@@ -31,39 +54,48 @@ public class VirtualMachine
         var halted = false;
         while (!halted)
         {
-            var operand = _memory[_instructionPointer];
+            var opCode = _memory[_instructionPointer];
             try
             {
-                switch (operand)
+                switch (opCode >> 4)
                 {
-                    case Command.Halt:
-                        halted = true;
-                        break;
-                    case Command.LoadFromFile:
-                        await LoadFromFile();
-                        break;
-                    case Command.SaveToFile:
-                        await SaveToFile();
-                        break;
-                    case Command.Write:
-                        Write();
-                        break;
-                    case Command.Inc:
-                        Inc();
-                        break;
-                    case Command.Dec:
-                        Dec();
-                        break;
-                    case Command.Nop:
-                        Nop();
-                        break;
-                    case Command.JumpIfZero:
-                        JumpIfZero();
-                        break;
-                    case Command.Add:
-                        throw new Exception("Due to lack of time this method has not been implemented");
+                    case Mask.SaveToFile:
+                        await SaveToFile(opCode);
+                        continue;
+                    case Mask.LoadFromFile:
+                        await LoadFromFile(opCode);
+                        continue;
                     default:
-                        throw new Exception("Unknown command " + operand);
+                        switch (opCode)
+                        {
+                            case OpCode.Halt:
+                                halted = true;
+                                break;
+                            case OpCode.Write:
+                                Write();
+                                break;
+                            case OpCode.Inc:
+                                Inc();
+                                break;
+                            case OpCode.Dec:
+                                Dec();
+                                break;
+                            case OpCode.Nop:
+                                Nop();
+                                break;
+                            case OpCode.JumpIfZero:
+                                JumpIfZero();
+                                break;
+                            case OpCode.Copy:
+                                Copy();
+                                break;
+                            case OpCode.Add:
+                                throw new Exception("Due to lack of time this method has not been implemented");
+                            default:
+                                throw new Exception("Unknown command " + opCode);
+                        }
+
+                        break;
                 }
             }
             catch (Exception e)
@@ -71,7 +103,7 @@ public class VirtualMachine
                 await Console.Error.WriteLineAsync($"Your program has crashed,  things aren't looking to good for the space craft.\n");
                 await Console.Error.WriteLineAsync($"{e.Message}");
                 await Console.Error.WriteLineAsync($"Instruction Pointer: {_instructionPointer}");
-                await Console.Error.WriteLineAsync($"Operand: {operand}\n");
+                await Console.Error.WriteLineAsync($"Opcode: {opCode}\n");
                 await File.WriteAllBytesAsync("crash_dump", _memory);
                 await Console.Error.WriteLineAsync($"A crash dump containing all the memory has been written to : ./crash_dump");
                 return;
@@ -116,7 +148,7 @@ public class VirtualMachine
     /// </summary>
     private async Task LoadFromFile()
     {
-        var fileNumber = ValueAt(_instructionPointer + 1);
+        var fileNumber = Memory(_instructionPointer + 1);
         var targetLocation = _memory[_instructionPointer + 2];
         
         var fileContents = await File.ReadAllBytesAsync(FilenameFromFileNumber(fileNumber));
@@ -126,28 +158,13 @@ public class VirtualMachine
         
         _instructionPointer += 3;
     }
-
-    /// <summary>
-    /// SaveToFile [FileNumber] SourceLocation [Length]
-    /// </summary>
-    private async Task SaveToFile()
-    {
-        var fileNumber = ValueAt(_instructionPointer + 1);
-        var sourceLocation = _memory[_instructionPointer + 2];
-        var length = ValueAt(_instructionPointer + 3);
-        
-        await File.WriteAllBytesAsync(FilenameFromFileNumber(fileNumber), _memory[sourceLocation..(sourceLocation+length)]);
-        
-        _instructionPointer += 4;
-    }
-    
     
     /// <summary>
     /// Write [Location] Value
     /// </summary>
     private void Write()
     {
-        var location = ValueAt(_instructionPointer + 1);
+        var location = Memory(_instructionPointer + 1);
         var value = _memory[_instructionPointer + 2];
 
         _memory[location] = value;
@@ -187,7 +204,7 @@ public class VirtualMachine
     /// </summary>
     private void JumpIfZero()
     {
-        var value = ValueAt(_instructionPointer + 1);
+        var value = Memory(_instructionPointer + 1);
         var address = _memory[_instructionPointer + 2];
 
         if (value == 0)
@@ -196,7 +213,20 @@ public class VirtualMachine
             _instructionPointer += 3;
     }
 
-    private byte ValueAt(int location)
+    /// <summary>
+    /// Copy [SourceLocation] [TargetLocation]
+    /// </summary>
+    private void Copy()
+    {
+        var value = Memory(_instructionPointer + 1);
+        var targetAddress = _memory[_instructionPointer + 2];
+
+        _memory[targetAddress] = value;
+        
+        _instructionPointer += 3;
+    }
+
+    private byte Memory(int location)
     {
         if (location >= _memory.Length)
             throw new Exception("Illegal memory location " + location);
@@ -206,5 +236,13 @@ public class VirtualMachine
             throw new Exception("Illegal de-referenced memory location " + location);
         
         return  _memory[reference];
+    } 
+    
+    private byte Immediate(int location)
+    {
+        if (location >= _memory.Length)
+            throw new Exception("Illegal memory location " + location);
+        
+        return  _memory[location];
     } 
 }

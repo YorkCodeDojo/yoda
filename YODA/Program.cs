@@ -8,7 +8,7 @@ public static class Program
         if (args.Length > 0)
             folder = args[0];
         
-        Console.WriteLine("Starting YODA (+ Anti-gravity module) - Release Build 12x.11g-34");
+        Console.WriteLine("Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
         Console.WriteLine($"Folder Path: {folder}\n" );
         Console.WriteLine($"Connecting to Engine Control System.... SUCCESS!" );
         Console.WriteLine($"Connecting to Landing Control System.... SUCCESS!" );
