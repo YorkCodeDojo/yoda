@@ -5,13 +5,29 @@ public partial class VirtualMachine
 {
     private static class Mask
     {
+        public const byte Halt = 0b0000;
         public const byte SaveToFile = 0b0001;
         public const byte LoadFromFile = 0b0010;
+        public const byte Write = 0b0011;
+        public const byte Add = 0b0100;
+        public const byte Sub = 0b0101;
+        public const byte Inc = 0b0110;
+        public const byte Dec = 0b0111;
+        public const byte Nop = 0b1000;
+        public const byte JumpIfZero = 0b1001;
+        public const byte Copy = 0b1010;
     }
 
     private static class OpCode
     {
+        //1 means immediate rather than memory (0)
+        
+        //Values can either be
+        //      M - Memory (0) or Immediate (1)
+        //      D - Indirect (0) or Direct (1) 
+        
         public const byte Halt = 0b0000_0000;   // 00
+
         
         public const byte SaveToFileMMM = 0b0001_0000;  //16
         public const byte SaveToFileMMI = 0b0001_0001;  //17
@@ -27,13 +43,45 @@ public partial class VirtualMachine
         public const byte LoadFromFileIM = 0b0010_0010;  //34
         public const byte LoadFromFileII = 0b0010_0011;  //35
         
-        public const byte Write = 0xA3;
-        public const byte Add = 0xA4;
-        public const byte Inc = 0xA5;
-        public const byte Dec = 0xA6;
-        public const byte Nop = 0xA7;
-        public const byte JumpIfZero = 0xA8;
-        public const byte Copy = 0xA9;
+        public const byte WriteMM = 0b0011_0000;  //48
+        public const byte WriteMI = 0b0011_0001;  //49
+        public const byte WriteIM = 0b0011_0010;  //50
+        
+        public const byte AddMMD = 0b0100_0000;  //64
+        public const byte AddMMI = 0b0100_0001;  //65
+        public const byte AddMID = 0b0100_0010;  //66
+        public const byte AddMII = 0b0100_0011;  //67
+        public const byte AddIMD = 0b0100_0100;  //68
+        public const byte AddIMI = 0b0100_0101;  //69
+        public const byte AddIID = 0b0100_0110;  //70
+        public const byte AddIII = 0b0100_0111;  //71
+
+        public const byte SubMMD = 0b0101_0000;  //80
+        public const byte SubMMI = 0b0101_0001;  //81
+        public const byte SubMID = 0b0101_0010;  //82
+        public const byte SubMII = 0b0101_0011;  //83
+        public const byte SubIMD = 0b0101_0100;  //84
+        public const byte SubIMI = 0b0101_0101;  //85
+        public const byte SubIID = 0b0101_0110;  //86
+        public const byte SubIII = 0b0101_0111;  //87
+        
+        public const byte IncM = 0b0110_0000;  //96
+        public const byte IncI = 0b0110_0001;  //97
+        
+        public const byte DecM = 0b0111_0000;  //112
+        public const byte DecI = 0b0111_0001;  //113
+        
+        public const byte Nop = 0b1000_0000; //128
+
+        public const byte JumpIfZeroMM = 0b1001_0000;  //144
+        public const byte JumpIfZeroMI = 0b1001_0001;  //145
+        public const byte JumpIfZeroIM = 0b1001_0010;  //146
+        public const byte JumpIfZeroII = 0b1001_0011;  //147
+        
+        public const byte CopyMM = 0b1010_0000;  //160
+        public const byte CopyMI = 0b1010_0001;  //161
+        public const byte CopyIM = 0b1010_0010;  //162
+        public const byte CopyII = 0b1010_0011;  //163
     }
     
 
@@ -59,43 +107,40 @@ public partial class VirtualMachine
             {
                 switch (opCode >> 4)
                 {
+                    case Mask.Halt:
+                        halted = true;
+                        continue;
                     case Mask.SaveToFile:
                         await SaveToFile(opCode);
                         continue;
                     case Mask.LoadFromFile:
                         await LoadFromFile(opCode);
                         continue;
-                    default:
-                        switch (opCode)
-                        {
-                            case OpCode.Halt:
-                                halted = true;
-                                break;
-                            case OpCode.Write:
-                                Write();
-                                break;
-                            case OpCode.Inc:
-                                Inc();
-                                break;
-                            case OpCode.Dec:
-                                Dec();
-                                break;
-                            case OpCode.Nop:
-                                Nop();
-                                break;
-                            case OpCode.JumpIfZero:
-                                JumpIfZero();
-                                break;
-                            case OpCode.Copy:
-                                Copy();
-                                break;
-                            case OpCode.Add:
-                                throw new Exception("Due to lack of time this method has not been implemented");
-                            default:
-                                throw new Exception("Unknown command " + opCode);
-                        }
-
+                    case Mask.Write:
+                        Write(opCode);
+                        continue;
+                    case Mask.Add:
+                        Add(opCode);
+                        continue;
+                    case Mask.Sub:
+                        throw new Exception("Due to lack of time this method has not been implemented");
+                    case Mask.Inc:
+                        Inc(opCode);
+                        continue;
+                    case Mask.Dec:
+                        Dec(opCode);
+                        continue;
+                    case Mask.Nop:
+                        Nop();
                         break;
+                    case Mask.JumpIfZero:
+                        JumpIfZero(opCode);
+                        break;
+                    case Mask.Copy:
+                        Copy(opCode);
+                        break;
+                    default:
+                        throw new Exception("Unknown command " + opCode);
                 }
                 
                 Console.WriteLine("\n\nProgram completed successfully");
@@ -162,12 +207,27 @@ public partial class VirtualMachine
     }
     
     /// <summary>
-    /// LoadFromFile [FileNumber] TargetLocation
+    /// SaveToFile FileNumber SourceLocation Length
     /// </summary>
-    private async Task LoadFromFile()
+    private async Task SaveToFile(int opCode)
     {
-        var fileNumber = Memory(_instructionPointer + 1);
-        var targetLocation = _memory[_instructionPointer + 2];
+        var fileNumber = Read(_instructionPointer + 1, opCode, 0);
+        var sourceLocation = Read(_instructionPointer + 2 , opCode, 1);
+        var length = Read(_instructionPointer + 3 , opCode, 2);
+        
+        await File.WriteAllBytesAsync(FilenameFromFileNumber(fileNumber), _memory[sourceLocation..(sourceLocation+length)]);
+        
+        _instructionPointer += 4;
+    }
+    
+    
+    /// <summary>
+    /// LoadFromFile FileNumber SourceLocation Length
+    /// </summary>
+    private async Task LoadFromFile(int opCode)
+    {
+        var fileNumber = Read(_instructionPointer + 1, opCode, 0);
+        var targetLocation = Read(_instructionPointer + 2 , opCode, 1);
         
         var fileContents = await File.ReadAllBytesAsync(FilenameFromFileNumber(fileNumber));
         if (fileContents.Length + targetLocation > _memory.Length)
@@ -177,24 +237,40 @@ public partial class VirtualMachine
         _instructionPointer += 3;
     }
     
+    
+    
     /// <summary>
     /// Write [Location] Value
     /// </summary>
-    private void Write()
+    private void Write(int opCode)
     {
-        var location = Memory(_instructionPointer + 1);
-        var value = _memory[_instructionPointer + 2];
+        var location = Read(_instructionPointer + 1, opCode, 0);
+        var value = Read(_instructionPointer + 2 , opCode, 1);
 
         _memory[location] = value;
         _instructionPointer += 3;
     }
     
     /// <summary>
+    /// Add LHS RHS Total
+    /// </summary>
+    private void Add(int opCode)
+    {
+        var lhs = Read(_instructionPointer + 1, opCode, 0);
+        var rhs = Read(_instructionPointer + 2 , opCode, 1);
+        var location = Read(_instructionPointer + 3 , opCode, 2);
+        
+        _memory[location] = (byte)(lhs+rhs); // Can overflow
+        _instructionPointer += 4;
+    }
+    
+    
+    /// <summary>
     /// Inc [Location]
     /// </summary>
-    private void Inc()
+    private void Inc(int opCode)
     {
-        var location = _memory[_instructionPointer + 1];
+        var location = Read(_instructionPointer + 1 , opCode, 0);
         _memory[location]++;
         _instructionPointer += 2;
     }
@@ -202,9 +278,9 @@ public partial class VirtualMachine
     /// <summary>
     /// Dec [Location]
     /// </summary>
-    private void Dec()
+    private void Dec(int opCode)
     {
-        var location = _memory[_instructionPointer + 1];
+        var location = Read(_instructionPointer + 1 , opCode, 0);
         _memory[location]--;
         _instructionPointer += 2;
     }
@@ -220,13 +296,13 @@ public partial class VirtualMachine
     /// <summary>
     /// JumoIfZero [Location] Address
     /// </summary>
-    private void JumpIfZero()
+    private void JumpIfZero(int opCode)
     {
-        var value = Memory(_instructionPointer + 1);
-        var address = _memory[_instructionPointer + 2];
+        var valueToCheck = Read(_instructionPointer + 1 , opCode, 0);
+        var locationToJumpTo = Read(_instructionPointer + 2 , opCode, 1);
 
-        if (value == 0)
-            _instructionPointer = address;
+        if (valueToCheck == 0)
+            _instructionPointer = locationToJumpTo;
         else
             _instructionPointer += 3;
     }
@@ -234,33 +310,31 @@ public partial class VirtualMachine
     /// <summary>
     /// Copy [SourceLocation] [TargetLocation]
     /// </summary>
-    private void Copy()
+    private void Copy(int opCode)
     {
-        var value = Memory(_instructionPointer + 1);
-        var targetAddress = _memory[_instructionPointer + 2];
+        var value = Read(_instructionPointer + 1 , opCode, 0);
+        var targetAddress = Read(_instructionPointer + 2 , opCode, 1);
 
         _memory[targetAddress] = value;
         
         _instructionPointer += 3;
     }
 
-    private byte Memory(int location)
+    private byte Read(int location,int opCode, int mask)
     {
+        //isSet means immediate rather than memory
+        var isSet = ((opCode >> mask) & 1) == 1;
+        
         if (location >= _memory.Length)
             throw new Exception("Illegal memory location " + location);
 
+        if (isSet)
+            return  _memory[location];
+            
         var reference = _memory[location];
         if (reference >= _memory.Length)
             throw new Exception("Illegal de-referenced memory location " + location);
         
         return  _memory[reference];
-    } 
-    
-    private byte Immediate(int location)
-    {
-        if (location >= _memory.Length)
-            throw new Exception("Illegal memory location " + location);
-        
-        return  _memory[location];
     } 
 }

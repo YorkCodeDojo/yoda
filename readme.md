@@ -13,7 +13,8 @@ One thing....  the fancy AI tools like cursor won't work in space,  so you will 
 
 For such an important task,  the machine is actually pretty basic.  
 
-* It has 256 memory locations (0x0-0xFF), each of which can hold a single byte.
+* It has 256 memory locations (0x0-0xFF), each of which can hold a single byte.  Due to the lack of memory space,  the machine comes with a couple of
+instructions (WriteToFile and LoadFromFile) which allows memory to be written to/from files.
 
 * At startup,  memory is populated from a boot file.   
 i.e. If the boot file contains the bytes 1 2 3,  then the first three memory locations will be populated with 1, 2 and 3.  The remaining 253 bytes
@@ -39,6 +40,42 @@ For the memory version of ADD, then `ADD 10 20 5` means take the value in memory
 specified by the value in memory location 5
 
 Each command has several opcodes,  depending on which opcodes you wish to be IMMEDIATE or MEMORY addressing
+
+* When the outside world needs to inform the machine about an event, then an interrupt is triggered.  An interrupt vector (IV) table holds the
+address of the code to run when the interrupt is triggered.
+
+| Address | Name               |
+|---------|--------------------|
+| 0xFE    | Space bar pressed  |
+| 0xFF    | Return key pressed |
+
+i.e. Address 0xFE needs to contain the address of the code to run when the space bar is pressed.  This code is know as the interrupt service routine (ISR)
+
+When your code has finished processing the interrupt it should called RET to return back to the instruction is was processing 
+before the interrupt was triggered.
+
+Other related commands are
+* SLEEP which causes the CPU to sleep for 1/10 of a second (100 ms)
+* WAIT which causes the CPU to sleep until an interrupt is triggered.
+* CIF which stands for Clear Interrupt Flag.  This switches off the processing of interrupts
+* SIF which stands for Set Interrupt Flag.  This resumes the processing of interrupts
+
+
+* Screen Memory
+Bytes 0xF9 to 0xFD are mapped to the machines ASCII LCD display.
+
+
+| Address | Description |
+|---------|-------------|
+| 0xF9    | 1st digit   |
+| 0xF0    | 2nd Digit   |
+| 0xFA    | 3rd Digit   |
+| 0xFB    | 4th Digit   |
+| 0xFC    | 5th Digit   |
+| 0xFD    | Refresh     |
+
+Updating Bit 0 of the refresh byte will cause the screen to draw.
+
 
 
 
@@ -172,3 +209,10 @@ Steps:
 
 
 
+Output module
+setting bit 0 of byte X to a 1 will write the contents of the last 7 bytes to the screen
+
+Input module
+Interrupt can be triggered
+SETIQ locationToJumpTo
+RETIQ return from the interrupt
