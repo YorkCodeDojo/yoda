@@ -154,19 +154,16 @@ public class VirtualMachine(bool Debug)
                         continue;
                     case Mask.Nop:
                         Nop();
-                        break;
+                        continue;
                     case Mask.JumpIfZero:
                         JumpIfZero(opCode);
-                        break;
+                        continue;
                     case Mask.Copy:
                         Copy(opCode);
-                        break;
+                        continue;
                     default:
                         throw new Exception("Unknown command " + opCode);
-                }
-                
-                Console.WriteLine("\n\nProgram completed successfully");
-                
+                }                
             }
             catch (Exception e)
             {
@@ -194,6 +191,8 @@ public class VirtualMachine(bool Debug)
                 return;
             }
         }
+        Console.WriteLine("\n\nProgram completed successfully");
+
     }
 
     private async Task Initialise()
@@ -273,10 +272,9 @@ public class VirtualMachine(bool Debug)
         
         if (location == ControlFlags)
         {
-           var diffs = _memory[location] ^ value;
-           if ((diffs & 1) == 1)
+           if ((_memory[location] & 1) == 0 && ((value & 1) == 1))
            {
-               //bit 0 has changed, refresh the LCD display
+               //bit 0 has been set, refresh the LCD display
                Console.Write(ToChar(_memory[LCD_0]));
                Console.Write(ToChar(_memory[LCD_1]));
                Console.Write(ToChar(_memory[LCD_2]));
