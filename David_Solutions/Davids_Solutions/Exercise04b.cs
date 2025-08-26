@@ -14,7 +14,7 @@ public class Exercise04b
 
         await File.WriteAllBytesAsync("/Users/davidbetteridge/SimpleInstructionMachine/Files/0",
         [
-            OpCode.JumpIfZero,   //0x00  
+            OpCode.JumpIfZeroII,   //0x00  
             0xFF,                 //0x01 (Final byte is always zero)
             0x0B,                 //0x02 (Start of code)
             
@@ -48,25 +48,25 @@ public class Exercise04b
             //   result (added by function before return)
             
             // Push LHS to the stack
-            OpCode.Copy,
+            OpCode.CopyII,
             0x06,   // Address of the memory location for the address of the LHS
             0x08,    // Address of the memory location holding the top of the stack        
-            OpCode.Dec, 0x08, // Move the stack from down 
+            OpCode.DecI, 0x08, // Move the stack from down 
 
             // Push RHS to the stack
-            OpCode.Copy,
+            OpCode.CopyII,
             0x07,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack        
-            OpCode.Dec, 0x08,   // Move the stack from down 
+            OpCode.DecI, 0x08,   // Move the stack from down 
             
             // Push Return Address to the stack
-            OpCode.Copy,
+            OpCode.CopyII,
             0x07,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack        
-            OpCode.Dec, 0x08,   // Move the stack from down 
+            OpCode.DecI, 0x08,   // Move the stack from down 
             
             // Run the function
-            OpCode.JumpIfZero,   //0x00  
+            OpCode.JumpIfZeroII,   //0x00  
             0xFF,                 //0x01 (Final byte is always zero)
             0xE,                  //0x02 (Start of code)
             
@@ -74,15 +74,15 @@ public class Exercise04b
             OpCode.Nop,         //0xE
             
             // Preserve the result
-            OpCode.Inc, 0x08,   // Move the stack up
-            OpCode.Copy,
+            OpCode.IncI, 0x08,   // Move the stack up
+            OpCode.CopyII,
             0x08,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack  
             
             // Restore the stack pointer (+3)
-            OpCode.Inc, 0x08,   // Move the stack up (return address)
-            OpCode.Inc, 0x08,   // Move the stack up (arg 2)
-            OpCode.Inc, 0x08,   // Move the stack up (arg 1)
+            OpCode.IncI, 0x08,   // Move the stack up (return address)
+            OpCode.IncI, 0x08,   // Move the stack up (arg 2)
+            OpCode.IncI, 0x08,   // Move the stack up (arg 1)
             
             // Write result to a file
             OpCode.SaveToFileIII,  //0xF
@@ -103,20 +103,20 @@ public class Exercise04b
             OpCode.Nop,          //0x3
             
             // Check if we have run out of numbers to add
-            OpCode.JumpIfZero,   //0x4  
+            OpCode.JumpIfZeroII,   //0x4  
             0x16,                 //0x5 (Location of the RHS)
             0xE,                  //0x6. (EndOfLoop)
             
             // Increase the left hand side
-            OpCode.Inc,         //0x7 
+            OpCode.IncI,         //0x7 
             0x15,                 //0x8 
             
             // Decrease the right hand side
-            OpCode.Dec,         //0x9
+            OpCode.DecI,         //0x9
             0x16,                //0xA 
             
             // Continue loop (always)
-            OpCode.JumpIfZero, //0xB 
+            OpCode.JumpIfZeroII, //0xB 
             0xFF,               //0xC (Value is always zero)
             0x3,                //0xD (StartOfLoop)
             

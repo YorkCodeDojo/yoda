@@ -1,3 +1,3 @@
 ﻿using Davids_Solutions;
 
-await Exercise04.Do();
+await Exercise06.Do();

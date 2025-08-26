@@ -7,6 +7,8 @@ public static class Program
         var folder = ".";
         if (args.Length > 0)
             folder = args[0];
+
+        var debug = (args.Length > 1 && args[1] == "--debug");
         
         Console.WriteLine("Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module");
         Console.WriteLine($"Folder Path: {folder}\n" );
@@ -15,7 +17,7 @@ public static class Program
         Console.WriteLine($"Connecting to Interplanetary Communication System.... SUCCESS!" );
         Console.WriteLine($"All systems are GO!" );
         
-        var machine = new VirtualMachine();
+        var machine = new VirtualMachine(debug);
         await machine.Run(folder);    
     }
     

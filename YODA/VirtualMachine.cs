@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 namespace SimpleInstructionMachine;
 
-public partial class VirtualMachine
+public class VirtualMachine(bool Debug)
 {
     private static class Mask
     {
@@ -27,6 +27,7 @@ public partial class VirtualMachine
         //      D - Indirect (0) or Direct (1) 
         
         public const byte Halt = 0b0000_0000;   // 00
+        public const byte Wait = 0b0000_0001;   // 00
 
         
         public const byte SaveToFileMMM = 0b0001_0000;  //16
@@ -84,7 +85,14 @@ public partial class VirtualMachine
         public const byte CopyII = 0b1010_0011;  //163
     }
     
+    private const byte LCD_0 = 0xF8;
+    private const byte LCD_1 = 0xF9;
+    private const byte LCD_2 = 0xFA;
+    private const byte LCD_3 = 0xFB;
+    private const byte LCD_4 = 0xFC;
 
+    private const byte ControlFlags = 0xFD;
+        
     
     private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
@@ -107,9 +115,23 @@ public partial class VirtualMachine
             {
                 switch (opCode >> 4)
                 {
-                    case Mask.Halt:
-                        halted = true;
-                        continue;
+                    case 0:
+                        switch (opCode)
+                        {
+                            case OpCode.Halt:
+                            {
+                                halted = true;
+                                continue;
+                            }
+                            case OpCode.Wait:
+                            {
+                                await Wait();
+                                continue;
+                            }
+                            default:
+                                throw new Exception("Unknown command " + opCode);
+                        }
+
                     case Mask.SaveToFile:
                         await SaveToFile(opCode);
                         continue;
@@ -211,9 +233,9 @@ public partial class VirtualMachine
     /// </summary>
     private async Task SaveToFile(int opCode)
     {
-        var fileNumber = Read(_instructionPointer + 1, opCode, 0);
+        var fileNumber = Read(_instructionPointer + 1, opCode, 2);
         var sourceLocation = Read(_instructionPointer + 2 , opCode, 1);
-        var length = Read(_instructionPointer + 3 , opCode, 2);
+        var length = Read(_instructionPointer + 3 , opCode, 0);
         
         await File.WriteAllBytesAsync(FilenameFromFileNumber(fileNumber), _memory[sourceLocation..(sourceLocation+length)]);
         
@@ -226,8 +248,8 @@ public partial class VirtualMachine
     /// </summary>
     private async Task LoadFromFile(int opCode)
     {
-        var fileNumber = Read(_instructionPointer + 1, opCode, 0);
-        var targetLocation = Read(_instructionPointer + 2 , opCode, 1);
+        var fileNumber = Read(_instructionPointer + 1, opCode, 1);
+        var targetLocation = Read(_instructionPointer + 2 , opCode, 0);
         
         var fileContents = await File.ReadAllBytesAsync(FilenameFromFileNumber(fileNumber));
         if (fileContents.Length + targetLocation > _memory.Length)
@@ -244,9 +266,34 @@ public partial class VirtualMachine
     /// </summary>
     private void Write(int opCode)
     {
-        var location = Read(_instructionPointer + 1, opCode, 0);
-        var value = Read(_instructionPointer + 2 , opCode, 1);
+        var location = Read(_instructionPointer + 1, opCode, 1);
+        var value = Read(_instructionPointer + 2 , opCode, 0);
 
+        if (Debug) Console.WriteLine($"Write {value} into {location:X2}");
+        
+        if (location == ControlFlags)
+        {
+           var diffs = _memory[location] ^ value;
+           if ((diffs & 1) == 1)
+           {
+               //bit 0 has changed, refresh the LCD display
+               Console.Write(ToChar(_memory[LCD_0]));
+               Console.Write(ToChar(_memory[LCD_1]));
+               Console.Write(ToChar(_memory[LCD_2]));
+               Console.Write(ToChar(_memory[LCD_3]));
+               Console.WriteLine(ToChar(_memory[LCD_4]));
+
+               char ToChar(byte b)
+               {
+                   if (b == 0x00)
+                       return ' ';
+                   else
+                       return (char)b;
+               }
+
+           }
+        }
+        
         _memory[location] = value;
         _instructionPointer += 3;
     }
@@ -256,9 +303,9 @@ public partial class VirtualMachine
     /// </summary>
     private void Add(int opCode)
     {
-        var lhs = Read(_instructionPointer + 1, opCode, 0);
+        var lhs = Read(_instructionPointer + 1, opCode, 2);
         var rhs = Read(_instructionPointer + 2 , opCode, 1);
-        var location = Read(_instructionPointer + 3 , opCode, 2);
+        var location = Read(_instructionPointer + 3 , opCode, 0);
         
         _memory[location] = (byte)(lhs+rhs); // Can overflow
         _instructionPointer += 4;
@@ -281,6 +328,9 @@ public partial class VirtualMachine
     private void Dec(int opCode)
     {
         var location = Read(_instructionPointer + 1 , opCode, 0);
+        
+        if (Debug) Console.WriteLine($"DEC: Decreasing value in {location:x8} from {_memory[location]} to {(_memory[location])-1}");
+        
         _memory[location]--;
         _instructionPointer += 2;
     }
@@ -293,14 +343,23 @@ public partial class VirtualMachine
         _instructionPointer++;
     }
 
+    private async Task Wait()
+    {
+        if (Debug) Console.WriteLine("Wait");
+        await Task.Delay(100);
+        _instructionPointer++;
+    }
+
     /// <summary>
-    /// JumoIfZero [Location] Address
+    /// JumoIfZero ValueToCheck Address
     /// </summary>
     private void JumpIfZero(int opCode)
     {
-        var valueToCheck = Read(_instructionPointer + 1 , opCode, 0);
-        var locationToJumpTo = Read(_instructionPointer + 2 , opCode, 1);
+        var valueToCheck = Read(_instructionPointer + 1 , opCode, 1);
+        var locationToJumpTo = Read(_instructionPointer + 2 , opCode, 0);
 
+        if (Debug) Console.WriteLine($"JumpIfZero ({opCode:b8}) - jump to {locationToJumpTo:X2} if {valueToCheck} is 0");
+         
         if (valueToCheck == 0)
             _instructionPointer = locationToJumpTo;
         else
@@ -312,8 +371,8 @@ public partial class VirtualMachine
     /// </summary>
     private void Copy(int opCode)
     {
-        var value = Read(_instructionPointer + 1 , opCode, 0);
-        var targetAddress = Read(_instructionPointer + 2 , opCode, 1);
+        var value = Read(_instructionPointer + 1 , opCode, 1);
+        var targetAddress = Read(_instructionPointer + 2 , opCode, 0);
 
         _memory[targetAddress] = value;
         
@@ -323,17 +382,24 @@ public partial class VirtualMachine
     private byte Read(int location,int opCode, int mask)
     {
         //isSet means immediate rather than memory
-        var isSet = ((opCode >> mask) & 1) == 1;
+        var isSet = (((opCode & 0b0000_1111) >> mask) & 1) == 1;
+        // Console.WriteLine($"{opCode:b8} {(opCode & 0b0000_1111):b8} mask {mask} {(((opCode & 0b0000_1111) >> mask) & 1 ):b8} {isSet} ");
         
         if (location >= _memory.Length)
             throw new Exception("Illegal memory location " + location);
 
         if (isSet)
-            return  _memory[location];
-            
+        {
+            // Console.WriteLine($"{opCode:b8}, {mask}, {_memory[location]:x8}");  
+            return _memory[location];
+        }
+
         var reference = _memory[location];
         if (reference >= _memory.Length)
             throw new Exception("Illegal de-referenced memory location " + location);
+        
+        // Console.WriteLine($"{opCode:b8}, {mask}, {reference:x8}, {_memory[reference]}");
+
         
         return  _memory[reference];
     } 

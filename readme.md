@@ -62,13 +62,13 @@ Other related commands are
 
 
 * Screen Memory
-Bytes 0xF9 to 0xFD are mapped to the machines ASCII LCD display.
+Bytes 0xF8 to 0xFD are mapped to the machines ASCII LCD display.
 
 
 | Address | Description |
 |---------|-------------|
-| 0xF9    | 1st digit   |
-| 0xF0    | 2nd Digit   |
+| 0xF8    | 1st digit   |
+| 0xF9    | 2nd Digit   |
 | 0xFA    | 3rd Digit   |
 | 0xFB    | 4th Digit   |
 | 0xFC    | 5th Digit   |
@@ -136,6 +136,8 @@ Rather than creating a binary file with the countdown sequence you were meant to
 Use file 9 instead of file 0.  Once you have created your file open it in a text editor to check it displays corrected.
 
 Hint...  ASCII
+
+
 
 
 ## Exercise 5

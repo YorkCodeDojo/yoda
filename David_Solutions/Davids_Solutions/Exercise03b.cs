@@ -19,20 +19,20 @@ public class Exercise03b
             OpCode.Nop,          //0x3
             
             // Check if we have run out of numbers to add
-            OpCode.JumpIfZero,   //0x4  
+            OpCode.JumpIfZeroII,   //0x4  
             0x16,                 //0x5 (Location of the RHS)
             0xE,                  //0x6. (EndOfLoop)
             
             // Increase the left hand side
-            OpCode.Inc,         //0x7 
+            OpCode.IncI,         //0x7 
             0x15,                 //0x8 
             
             // Decrease the right hand side
-            OpCode.Dec,         //0x9
+            OpCode.DecI,         //0x9
             0x16,                //0xA 
             
             // Continue loop (always)
-            OpCode.JumpIfZero, //0xB 
+            OpCode.JumpIfZeroII, //0xB 
             0xFF,               //0xC (Value is always zero)
             0x3,                //0xD (StartOfLoop)
             
