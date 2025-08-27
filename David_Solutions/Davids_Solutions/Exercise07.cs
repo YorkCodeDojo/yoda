@@ -18,7 +18,7 @@ public static class Exercise07
             
             // Configure the IVT
             OpCode.WriteII, InterruptVectorTable.LEFT_ARROW, 0x0F,   // 0x05
-            OpCode.WriteII, InterruptVectorTable.RIGHT_ARROW, 0x16,  // 0x08
+            OpCode.WriteII, InterruptVectorTable.RIGHT_ARROW, 0x17,  // 0x08
             
             // Wait for interrupts
             OpCode.Wait,        //0xB
@@ -27,17 +27,17 @@ public static class Exercise07
             // ISR for the Left Arrow
             OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x0F Clear the craft
             OpCode.DecI, pCraftLocation,  //0x12
-            OpCode.JumpWithReturnI, 0x1E, //0x13
-            OpCode.Ret,                   //0x15
+            OpCode.JumpWithReturnI, 0x1F, //0x14
+            OpCode.Ret,                   //0x16
             
             // ISR for the Right Arrow
-            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x16 Clear the craft
-            OpCode.IncI, pCraftLocation,  //0x19
-            OpCode.JumpWithReturnI, 0x1E, //0x1B
-            OpCode.Ret,         //0x1D
+            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x17 Clear the craft
+            OpCode.IncI, pCraftLocation,  //0x1A
+            OpCode.JumpWithReturnI, 0x1F, //0x1C
+            OpCode.Ret,         //0x1E
             
             // Function to write to the screen
-            OpCode.AddMII, pCraftLocation, Screen.LCD_0, pScreenAddress,  //0x1E
+            OpCode.AddMII, pCraftLocation, Screen.LCD_0, pScreenAddress,  //0x1F
             OpCode.WriteMI,  pScreenAddress,  (byte)'-',  // Display the craft digit
             OpCode.WriteII,  Screen.ControlFlags,   0,  // Refresh the screen
             OpCode.WriteII,  Screen.ControlFlags,   1,  // Refresh the screen

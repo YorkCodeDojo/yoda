@@ -92,6 +92,12 @@ public class VirtualMachine(bool Debug)
 
     private const byte ControlFlags = 0xFD;
         
+    public static class InterruptVectorTable
+    {
+        public const byte LEFT_ARROW = 0xFF;
+        public const byte RIGHT_ARROW = 0xFE;
+    }
+    
     
     private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
@@ -109,6 +115,22 @@ public class VirtualMachine(bool Debug)
         var halted = false;
         while (!halted)
         {
+            // Check for interrupt
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey();
+                if (key.Key == ConsoleKey.LeftArrow)
+                {
+                    _stack.Push((byte)_instructionPointer);
+                    _instructionPointer = _memory[InterruptVectorTable.LEFT_ARROW];
+                }
+                else if (key.Key == ConsoleKey.RightArrow)
+                {
+                    _stack.Push((byte)_instructionPointer);
+                    _instructionPointer = _memory[InterruptVectorTable.RIGHT_ARROW];
+                }
+            }
+            
             var opCode = _memory[_instructionPointer];
             try
             {
