@@ -2,36 +2,37 @@ namespace Davids_Solutions;
 
 public static class OpCode
 {
-        public const byte Halt = 0b0000_0000;   // 00
-        public const byte Wait = 0b0000_0001;   // 01
-        
-        public const byte SaveToFileMMM = 0b0001_0000;  //16
-        public const byte SaveToFileMMI = 0b0001_0001;  //17
-        public const byte SaveToFileMIM = 0b0001_0010;  //18
-        public const byte SaveToFileMII = 0b0001_0011;  //19
-        public const byte SaveToFileIMM = 0b0001_0100;  //20
-        public const byte SaveToFileIMI = 0b0001_0101;  //21
-        public const byte SaveToFileIIM = 0b0001_0110;  //22
-        public const byte SaveToFileIII = 0b0001_0111;  //23
-        
-        public const byte LoadFromFileMM = 0b0010_0000;  //32
-        public const byte LoadFromFileMI = 0b0010_0001;  //33
-        public const byte LoadFromFileIM = 0b0010_0010;  //34
-        public const byte LoadFromFileII = 0b0010_0011;  //35
-        
-        public const byte WriteMM = 0b0011_0000;  //48
-        public const byte WriteMI = 0b0011_0001;  //49
-        public const byte WriteIM = 0b0011_0010;  //50
-        public const byte WriteII = 0b0011_0011;  //51
-        
-        public const byte AddMMD = 0b0100_0000;  //64
-        public const byte AddMMI = 0b0100_0001;  //65
-        public const byte AddMID = 0b0100_0010;  //66
-        public const byte AddMII = 0b0100_0011;  //67
-        public const byte AddIMD = 0b0100_0100;  //68
-        public const byte AddIMI = 0b0100_0101;  //69
-        public const byte AddIID = 0b0100_0110;  //70
-        public const byte AddIII = 0b0100_0111;  //71
+        public const byte Halt = 0b0000_0000; // 00
+        public const byte Wait = 0b0000_0001; // 01
+        public const byte Ret = 0b0000_0011; // 02
+
+        public const byte SaveToFileMMM = 0b0001_0000; //16
+        public const byte SaveToFileMMI = 0b0001_0001; //17
+        public const byte SaveToFileMIM = 0b0001_0010; //18
+        public const byte SaveToFileMII = 0b0001_0011; //19
+        public const byte SaveToFileIMM = 0b0001_0100; //20
+        public const byte SaveToFileIMI = 0b0001_0101; //21
+        public const byte SaveToFileIIM = 0b0001_0110; //22
+        public const byte SaveToFileIII = 0b0001_0111; //23
+
+        public const byte LoadFromFileMM = 0b0010_0000; //32
+        public const byte LoadFromFileMI = 0b0010_0001; //33
+        public const byte LoadFromFileIM = 0b0010_0010; //34
+        public const byte LoadFromFileII = 0b0010_0011; //35
+
+        public const byte WriteMM = 0b0011_0000; //48
+        public const byte WriteMI = 0b0011_0001; //49
+        public const byte WriteIM = 0b0011_0010; //50
+        public const byte WriteII = 0b0011_0011; //51
+
+        public const byte AddMMD = 0b0100_0000; //64
+        public const byte AddMMI = 0b0100_0001; //65
+        public const byte AddMID = 0b0100_0010; //66
+        public const byte AddMII = 0b0100_0011; //67
+        public const byte AddIMD = 0b0100_0100; //68
+        public const byte AddIMI = 0b0100_0101; //69
+        public const byte AddIID = 0b0100_0110; //70
+        public const byte AddIII = 0b0100_0111; //71
 
         public const byte SubMMD = 0b0101_0000;  //80
         public const byte SubMMI = 0b0101_0001;  //81
@@ -54,6 +55,9 @@ public static class OpCode
         public const byte JumpIfZeroMI = 0b1001_0001;  //145
         public const byte JumpIfZeroIM = 0b1001_0010;  //146
         public const byte JumpIfZeroII = 0b1001_0011;  //147
+        
+        public const byte JumpWithReturnM = 0b1010_0000;  //160
+        public const byte JumpWithReturnI = 0b1010_0001;  //161
 }
 
 public static class Screen
@@ -65,4 +69,10 @@ public static class Screen
         public const byte LCD_4 = 0xFC;
 
         public const byte ControlFlags = 0xFD;
+}
+
+public static class InterruptVectorTable
+{
+        public const byte LEFT_ARROW = 0xFF;
+        public const byte RIGHT_ARROW = 0xFE;
 }

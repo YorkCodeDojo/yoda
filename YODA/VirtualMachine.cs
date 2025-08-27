@@ -15,7 +15,7 @@ public class VirtualMachine(bool Debug)
         public const byte Dec = 0b0111;
         public const byte Nop = 0b1000;
         public const byte JumpIfZero = 0b1001;
-        public const byte Copy = 0b1010;
+        public const byte JumpWithReturn = 0b1010;
     }
 
     private static class OpCode
@@ -28,7 +28,7 @@ public class VirtualMachine(bool Debug)
         
         public const byte Halt = 0b0000_0000;   // 00
         public const byte Wait = 0b0000_0001;   // 00
-
+        public const byte Ret = 0b0000_0011; // 02
         
         public const byte SaveToFileMMM = 0b0001_0000;  //16
         public const byte SaveToFileMMI = 0b0001_0001;  //17
@@ -78,6 +78,10 @@ public class VirtualMachine(bool Debug)
         public const byte JumpIfZeroMI = 0b1001_0001;  //145
         public const byte JumpIfZeroIM = 0b1001_0010;  //146
         public const byte JumpIfZeroII = 0b1001_0011;  //147
+        
+        public const byte JumpWithReturnM = 0b1010_0000;  //160
+        public const byte JumpWithReturnI = 0b1010_0001;  //161
+        
     }
     
     private const byte LCD_0 = 0xF8;
@@ -123,6 +127,12 @@ public class VirtualMachine(bool Debug)
                                 await Wait();
                                 continue;
                             }
+                            case OpCode.Ret:
+                            {
+                                // Return from interrupt
+                                Ret();
+                                continue;
+                            }
                             default:
                                 throw new Exception("Unknown command " + opCode);
                         }
@@ -152,6 +162,9 @@ public class VirtualMachine(bool Debug)
                         continue;
                     case Mask.JumpIfZero:
                         JumpIfZero(opCode);
+                        continue;
+                    case Mask.JumpWithReturn:
+                        JumpWithReturn(opCode);
                         continue;
                     default:
                         throw new Exception("Unknown command " + opCode);
@@ -308,6 +321,8 @@ public class VirtualMachine(bool Debug)
         var rhs = Read(_instructionPointer + 2 , opCode, 1);
         var location = Read(_instructionPointer + 3 , opCode, 0);
         
+        if (Debug) Console.WriteLine($"Add {lhs} + {rhs} = {lhs+rhs} ==> {location:x8}");
+        
         _memory[location] = (byte)(lhs+rhs); // Can overflow
         _instructionPointer += 4;
     }
@@ -351,6 +366,17 @@ public class VirtualMachine(bool Debug)
         _instructionPointer++;
     }
 
+    private Stack<byte> _stack = new();
+    
+    private void Ret()
+    {
+        if (!_stack.TryPop(out var gotoAddress))
+            throw new Exception("There is no address on the stack to return to.");
+        
+        if (Debug) Console.WriteLine($"Ret {_instructionPointer:x8} to {gotoAddress:x8}");
+        _instructionPointer = gotoAddress;
+    }
+    
     /// <summary>
     /// JumoIfZero ValueToCheck Address
     /// </summary>
@@ -365,6 +391,18 @@ public class VirtualMachine(bool Debug)
             _instructionPointer = locationToJumpTo;
         else
             _instructionPointer += 3;
+    }
+    
+    /// <summary>
+    /// JumoWithReturn Address
+    /// </summary>
+    private void JumpWithReturn(int opCode)
+    {
+        var locationToJumpTo = Read(_instructionPointer + 1 , opCode, 0);
+
+        if (Debug) Console.WriteLine($"JumoWithReturn ({opCode:b8}) - jump to {locationToJumpTo:X2}");
+         _stack.Push((byte)(_instructionPointer+2));
+        _instructionPointer = locationToJumpTo;
     }
     
 
