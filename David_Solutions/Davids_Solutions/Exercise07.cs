@@ -14,30 +14,31 @@ public static class Exercise07
         [
             // ; Craft starts in the centre
             OpCode.WriteII, pCraftLocation, 2,       // 0x00
-            OpCode.JumpWithReturnI, 0x1F,            // 0x03
+            OpCode.JumpWithReturnI, 0x20,            // 0x03
             
             // Configure the IVT
-            OpCode.WriteII, InterruptVectorTable.LEFT_ARROW, 0x0F,   // 0x05
-            OpCode.WriteII, InterruptVectorTable.RIGHT_ARROW, 0x17,  // 0x08
+            OpCode.WriteII, InterruptVectorTable.LEFT_ARROW, 0x10,   // 0x05
+            OpCode.WriteII, InterruptVectorTable.RIGHT_ARROW, 0x18,  // 0x08
+            OpCode.Sif, // 0x0B
             
             // Wait for interrupts
-            OpCode.Wait,        //0xB
-            OpCode.JumpIfZeroMI, 0xD1, 0xB, //0x0C
+            OpCode.Wait,        //0x0C
+            OpCode.JumpIfZeroMI, 0xD1, 0xB, //0x0D
             
             // ISR for the Left Arrow
-            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x0F Clear the craft
-            OpCode.DecI, pCraftLocation,  //0x12
-            OpCode.JumpWithReturnI, 0x1F, //0x14
-            OpCode.Ret,                   //0x16
+            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x10 Clear the craft
+            OpCode.DecI, pCraftLocation,  //0x13
+            OpCode.JumpWithReturnI, 0x20, //0x15
+            OpCode.Ret,                   //0x17
             
             // ISR for the Right Arrow
-            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x17 Clear the craft
-            OpCode.IncI, pCraftLocation,  //0x1A
-            OpCode.JumpWithReturnI, 0x1F, //0x1C
-            OpCode.Ret,         //0x1E
+            OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x18 Clear the craft
+            OpCode.IncI, pCraftLocation,  //0x1B
+            OpCode.JumpWithReturnI, 0x20, //0x1D
+            OpCode.Ret,         //0x1F
             
             // Function to write to the screen
-            OpCode.AddMII, pCraftLocation, Screen.LCD_0, pScreenAddress,  //0x1F
+            OpCode.AddMII, pCraftLocation, Screen.LCD_0, pScreenAddress,  //0x20
             OpCode.WriteMI,  pScreenAddress,  (byte)'-',  // Display the craft digit
             OpCode.WriteII,  Screen.ControlFlags,   0,  // Refresh the screen
             OpCode.WriteII,  Screen.ControlFlags,   1,  // Refresh the screen

@@ -2,9 +2,13 @@ namespace Davids_Solutions;
 
 public static class OpCode
 {
+        // Misc (opcodes without operands)
         public const byte Halt = 0b0000_0000; // 00
-        public const byte Wait = 0b0000_0001; // 01
-        public const byte Ret = 0b0000_0011; // 02
+        public const byte Wait = 0b0000_0001; // 00
+        public const byte Ret = 0b0000_0011;  // 02
+        public const byte Nop = 0b0000_0100;  // 03
+        public const byte Sif = 0b0000_0101;  // 04
+        public const byte Cif = 0b0000_0110;  // 05
 
         public const byte SaveToFileMMM = 0b0001_0000; //16
         public const byte SaveToFileMMI = 0b0001_0001; //17
@@ -49,8 +53,6 @@ public static class OpCode
         public const byte DecM = 0b0111_0000;  //112
         public const byte DecI = 0b0111_0001;  //113
         
-        public const byte Nop = 0b1000_0000; //128
-
         public const byte JumpIfZeroMM = 0b1001_0000;  //144
         public const byte JumpIfZeroMI = 0b1001_0001;  //145
         public const byte JumpIfZeroIM = 0b1001_0010;  //146

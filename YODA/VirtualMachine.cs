@@ -3,131 +3,35 @@ namespace SimpleInstructionMachine;
 
 public class VirtualMachine(bool Debug)
 {
-    private static class Mask
-    {
-        public const byte Halt = 0b0000;
-        public const byte SaveToFile = 0b0001;
-        public const byte LoadFromFile = 0b0010;
-        public const byte Write = 0b0011;
-        public const byte Add = 0b0100;
-        public const byte Sub = 0b0101;
-        public const byte Inc = 0b0110;
-        public const byte Dec = 0b0111;
-        public const byte Nop = 0b1000;
-        public const byte JumpIfZero = 0b1001;
-        public const byte JumpWithReturn = 0b1010;
-    }
-
-    private static class OpCode
-    {
-        //1 means immediate rather than memory (0)
-        
-        //Values can either be
-        //      M - Memory (0) or Immediate (1)
-        //      D - Indirect (0) or Direct (1) 
-        
-        public const byte Halt = 0b0000_0000;   // 00
-        public const byte Wait = 0b0000_0001;   // 00
-        public const byte Ret = 0b0000_0011; // 02
-        
-        public const byte SaveToFileMMM = 0b0001_0000;  //16
-        public const byte SaveToFileMMI = 0b0001_0001;  //17
-        public const byte SaveToFileMIM = 0b0001_0010;  //18
-        public const byte SaveToFileMII = 0b0001_0011;  //19
-        public const byte SaveToFileIMM = 0b0001_0100;  //20
-        public const byte SaveToFileIMI = 0b0001_0101;  //21
-        public const byte SaveToFileIIM = 0b0001_0110;  //22
-        public const byte SaveToFileIII = 0b0001_0111;  //23
-        
-        public const byte LoadFromFileMM = 0b0010_0000;  //32
-        public const byte LoadFromFileMI = 0b0010_0001;  //33
-        public const byte LoadFromFileIM = 0b0010_0010;  //34
-        public const byte LoadFromFileII = 0b0010_0011;  //35
-        
-        public const byte WriteMM = 0b0011_0000;  //48
-        public const byte WriteMI = 0b0011_0001;  //49
-        public const byte WriteIM = 0b0011_0010;  //50
-        
-        public const byte AddMMD = 0b0100_0000;  //64
-        public const byte AddMMI = 0b0100_0001;  //65
-        public const byte AddMID = 0b0100_0010;  //66
-        public const byte AddMII = 0b0100_0011;  //67
-        public const byte AddIMD = 0b0100_0100;  //68
-        public const byte AddIMI = 0b0100_0101;  //69
-        public const byte AddIID = 0b0100_0110;  //70
-        public const byte AddIII = 0b0100_0111;  //71
-
-        public const byte SubMMD = 0b0101_0000;  //80
-        public const byte SubMMI = 0b0101_0001;  //81
-        public const byte SubMID = 0b0101_0010;  //82
-        public const byte SubMII = 0b0101_0011;  //83
-        public const byte SubIMD = 0b0101_0100;  //84
-        public const byte SubIMI = 0b0101_0101;  //85
-        public const byte SubIID = 0b0101_0110;  //86
-        public const byte SubIII = 0b0101_0111;  //87
-        
-        public const byte IncM = 0b0110_0000;  //96
-        public const byte IncI = 0b0110_0001;  //97
-        
-        public const byte DecM = 0b0111_0000;  //112
-        public const byte DecI = 0b0111_0001;  //113
-        
-        public const byte Nop = 0b1000_0000; //128
-
-        public const byte JumpIfZeroMM = 0b1001_0000;  //144
-        public const byte JumpIfZeroMI = 0b1001_0001;  //145
-        public const byte JumpIfZeroIM = 0b1001_0010;  //146
-        public const byte JumpIfZeroII = 0b1001_0011;  //147
-        
-        public const byte JumpWithReturnM = 0b1010_0000;  //160
-        public const byte JumpWithReturnI = 0b1010_0001;  //161
-        
-    }
-    
-    private const byte LCD_0 = 0xF8;
-    private const byte LCD_1 = 0xF9;
-    private const byte LCD_2 = 0xFA;
-    private const byte LCD_3 = 0xFB;
-    private const byte LCD_4 = 0xFC;
-
-    private const byte ControlFlags = 0xFD;
-        
-    public static class InterruptVectorTable
-    {
-        public const byte LEFT_ARROW = 0xFF;
-        public const byte RIGHT_ARROW = 0xFE;
-    }
-    
-    
     private readonly byte[] _memory = new byte[1 + byte.MaxValue];
 
-    private int _instructionPointer = 0;
+    private int _instructionPointer = KnownMemory.APP_DATA_BOTTOM;
+    private int _stackHeadPointer = KnownMemory.STACK_BOTTOM;
+    private bool _interruptsEnabled;
 
     private string _folder = ".";
     
     public async Task Run(string folderPath)
     {
-        
         _folder = folderPath;
-        
-        await Initialise();
+        await Boot();
 
         var halted = false;
         while (!halted)
         {
             // Check for interrupt
-            if (Console.KeyAvailable)
+            if (_interruptsEnabled && Console.KeyAvailable)
             {
                 var key = Console.ReadKey();
                 if (key.Key == ConsoleKey.LeftArrow)
                 {
-                    _stack.Push((byte)_instructionPointer);
-                    _instructionPointer = _memory[InterruptVectorTable.LEFT_ARROW];
+                    PushToStack((byte)_instructionPointer);
+                    _instructionPointer = _memory[KnownMemory.IVT_LEFT_ARROW];
                 }
                 else if (key.Key == ConsoleKey.RightArrow)
                 {
-                    _stack.Push((byte)_instructionPointer);
-                    _instructionPointer = _memory[InterruptVectorTable.RIGHT_ARROW];
+                    PushToStack((byte)_instructionPointer);
+                    _instructionPointer = _memory[KnownMemory.IVT_RIGHT_ARROW];
                 }
             }
             
@@ -136,7 +40,7 @@ public class VirtualMachine(bool Debug)
             {
                 switch (opCode >> 4)
                 {
-                    case 0:
+                    case Mask.Misc:
                         switch (opCode)
                         {
                             case OpCode.Halt:
@@ -149,6 +53,15 @@ public class VirtualMachine(bool Debug)
                                 await Wait();
                                 continue;
                             }
+                            case OpCode.Nop:
+                                Nop();
+                                continue;
+                            case OpCode.Sif:
+                                Sif();
+                                continue;
+                            case OpCode.Cif:
+                                Cif();
+                                continue;
                             case OpCode.Ret:
                             {
                                 // Return from interrupt
@@ -178,9 +91,6 @@ public class VirtualMachine(bool Debug)
                         continue;
                     case Mask.Dec:
                         Dec(opCode);
-                        continue;
-                    case Mask.Nop:
-                        Nop();
                         continue;
                     case Mask.JumpIfZero:
                         JumpIfZero(opCode);
@@ -222,11 +132,29 @@ public class VirtualMachine(bool Debug)
 
     }
 
-    private async Task Initialise()
+    private void PushToStack(byte value)
     {
-        Array.Fill(_memory,(byte)0);
-        _instructionPointer = 0;
+        _memory[_stackHeadPointer--] = value;
+    }
 
+    private byte PopFromStack()
+    {
+        _stackHeadPointer++;
+        if (_stackHeadPointer > KnownMemory.STACK_BOTTOM)
+            throw new Exception("Stack underflow");
+        
+        return _memory[_stackHeadPointer];
+    }
+    
+    private async Task Boot()
+    {
+        // Reset memory and pointers
+        Array.Fill(_memory,(byte)0);
+        _instructionPointer = KnownMemory.APP_DATA_BOTTOM;
+        _interruptsEnabled = false;
+        _stackHeadPointer = KnownMemory.STACK_BOTTOM;
+
+        // Load the contents of the boot file into memory
         var filename = Path.Combine(_folder, "boot");
         if (File.Exists(filename))
         {
@@ -305,22 +233,22 @@ public class VirtualMachine(bool Debug)
 
     private void UpdateScreenIfRequired(byte location, byte value)
     {
-        if (location == ControlFlags)
+        if (location == KnownMemory.ControlFlags)
         {
             if ((_memory[location] & 1) == 0 && ((value & 1) == 1))
             {
                 //bit 0 has been set, refresh the LCD display
                 Console.WriteLine("---------------------");
                 Console.Write("| ");
-                Console.Write(ToChar(_memory[LCD_0]));
+                Console.Write(ToChar(_memory[KnownMemory.LCD_0]));
                 Console.Write(" | ");
-                Console.Write(ToChar(_memory[LCD_1]));
+                Console.Write(ToChar(_memory[KnownMemory.LCD_1]));
                 Console.Write(" | ");
-                Console.Write(ToChar(_memory[LCD_2]));
+                Console.Write(ToChar(_memory[KnownMemory.LCD_2]));
                 Console.Write(" | ");
-                Console.Write(ToChar(_memory[LCD_3]));
+                Console.Write(ToChar(_memory[KnownMemory.LCD_3]));
                 Console.Write(" | ");
-                Console.Write(ToChar(_memory[LCD_4]));
+                Console.Write(ToChar(_memory[KnownMemory.LCD_4]));
                 Console.WriteLine(" |");
                 Console.WriteLine("---------------------");
                 char ToChar(byte b)
@@ -381,6 +309,24 @@ public class VirtualMachine(bool Debug)
         _instructionPointer++;
     }
 
+    /// <summary>
+    /// Sif
+    /// </summary>
+    private void Sif()
+    {
+        _interruptsEnabled = true;
+        _instructionPointer++;
+    }
+    
+    /// <summary>
+    /// Cif
+    /// </summary>
+    private void Cif()
+    {
+        _interruptsEnabled = false;
+        _instructionPointer++;
+    }
+    
     private async Task Wait()
     {
         if (Debug) Console.WriteLine("Wait");
@@ -388,12 +334,10 @@ public class VirtualMachine(bool Debug)
         _instructionPointer++;
     }
 
-    private Stack<byte> _stack = new();
     
     private void Ret()
     {
-        if (!_stack.TryPop(out var gotoAddress))
-            throw new Exception("There is no address on the stack to return to.");
+        var gotoAddress = PopFromStack();
         
         if (Debug) Console.WriteLine($"Ret {_instructionPointer:x8} to {gotoAddress:x8}");
         _instructionPointer = gotoAddress;
@@ -416,14 +360,14 @@ public class VirtualMachine(bool Debug)
     }
     
     /// <summary>
-    /// JumoWithReturn Address
+    /// JumpWithReturn Address
     /// </summary>
     private void JumpWithReturn(int opCode)
     {
         var locationToJumpTo = Read(_instructionPointer + 1 , opCode, 0);
 
-        if (Debug) Console.WriteLine($"JumoWithReturn ({opCode:b8}) - jump to {locationToJumpTo:X2}");
-         _stack.Push((byte)(_instructionPointer+2));
+        if (Debug) Console.WriteLine($"JumpWithReturn ({opCode:b8}) - jump to {locationToJumpTo:X2}");
+        PushToStack((byte)(_instructionPointer+2));
         _instructionPointer = locationToJumpTo;
     }
     
