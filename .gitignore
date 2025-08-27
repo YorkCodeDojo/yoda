@@ -3,3 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+YODA_Python/venv/
+YODA_TypeScript/node_modules/
+YODA_Python/__pycache__/

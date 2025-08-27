@@ -1,0 +1,17 @@
+{
+  "name": "simple-instruction-machine",
+  "version": "1.0.0",
+  "main": "main.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node main.ts",
+    "dev": "ts-node main.ts --debug",
+    "build": "tsc",
+    "run:js": "node dist/main.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.11.19"
+  }
+}
