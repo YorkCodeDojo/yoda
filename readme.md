@@ -74,7 +74,7 @@ Bytes 0xF8 to 0xFD are mapped to the machines ASCII LCD display.
 | 0xFC    | 5th Digit   |
 | 0xFD    | Refresh     |
 
-Updating Bit 0 of the refresh byte will cause the screen to draw.
+Setting Bit 0 of the refresh byte to 1 will cause the screen to draw.
 
 
 

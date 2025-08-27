@@ -48,19 +48,19 @@ public class Exercise04b
             //   result (added by function before return)
             
             // Push LHS to the stack
-            OpCode.CopyII,
+            OpCode.WriteII,
             0x06,   // Address of the memory location for the address of the LHS
             0x08,    // Address of the memory location holding the top of the stack        
             OpCode.DecI, 0x08, // Move the stack from down 
 
             // Push RHS to the stack
-            OpCode.CopyII,
+            OpCode.WriteII,
             0x07,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack        
             OpCode.DecI, 0x08,   // Move the stack from down 
             
             // Push Return Address to the stack
-            OpCode.CopyII,
+            OpCode.WriteII,
             0x07,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack        
             OpCode.DecI, 0x08,   // Move the stack from down 
@@ -75,7 +75,7 @@ public class Exercise04b
             
             // Preserve the result
             OpCode.IncI, 0x08,   // Move the stack up
-            OpCode.CopyII,
+            OpCode.WriteII,
             0x08,                // Address of the memory location for the address of the RHS
             0x08,                // Address of the memory location holding the top of the stack  
             

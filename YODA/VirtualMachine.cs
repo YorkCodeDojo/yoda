@@ -78,11 +78,6 @@ public class VirtualMachine(bool Debug)
         public const byte JumpIfZeroMI = 0b1001_0001;  //145
         public const byte JumpIfZeroIM = 0b1001_0010;  //146
         public const byte JumpIfZeroII = 0b1001_0011;  //147
-        
-        public const byte CopyMM = 0b1010_0000;  //160
-        public const byte CopyMI = 0b1010_0001;  //161
-        public const byte CopyIM = 0b1010_0010;  //162
-        public const byte CopyII = 0b1010_0011;  //163
     }
     
     private const byte LCD_0 = 0xF8;
@@ -157,9 +152,6 @@ public class VirtualMachine(bool Debug)
                         continue;
                     case Mask.JumpIfZero:
                         JumpIfZero(opCode);
-                        continue;
-                    case Mask.Copy:
-                        Copy(opCode);
                         continue;
                     default:
                         throw new Exception("Unknown command " + opCode);
@@ -270,32 +262,43 @@ public class VirtualMachine(bool Debug)
 
         if (Debug) Console.WriteLine($"Write {value} into {location:X2}");
         
-        if (location == ControlFlags)
-        {
-           if ((_memory[location] & 1) == 0 && ((value & 1) == 1))
-           {
-               //bit 0 has been set, refresh the LCD display
-               Console.Write(ToChar(_memory[LCD_0]));
-               Console.Write(ToChar(_memory[LCD_1]));
-               Console.Write(ToChar(_memory[LCD_2]));
-               Console.Write(ToChar(_memory[LCD_3]));
-               Console.WriteLine(ToChar(_memory[LCD_4]));
-
-               char ToChar(byte b)
-               {
-                   if (b == 0x00)
-                       return ' ';
-                   else
-                       return (char)b;
-               }
-
-           }
-        }
+        UpdateScreenIfRequired(location, value);
         
         _memory[location] = value;
         _instructionPointer += 3;
     }
-    
+
+    private void UpdateScreenIfRequired(byte location, byte value)
+    {
+        if (location == ControlFlags)
+        {
+            if ((_memory[location] & 1) == 0 && ((value & 1) == 1))
+            {
+                //bit 0 has been set, refresh the LCD display
+                Console.WriteLine("---------------------");
+                Console.Write("| ");
+                Console.Write(ToChar(_memory[LCD_0]));
+                Console.Write(" | ");
+                Console.Write(ToChar(_memory[LCD_1]));
+                Console.Write(" | ");
+                Console.Write(ToChar(_memory[LCD_2]));
+                Console.Write(" | ");
+                Console.Write(ToChar(_memory[LCD_3]));
+                Console.Write(" | ");
+                Console.Write(ToChar(_memory[LCD_4]));
+                Console.WriteLine(" |");
+                Console.WriteLine("---------------------");
+                char ToChar(byte b)
+                {
+                    if (b == 0x00)
+                        return ' ';
+                    else
+                        return (char)b;
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Add LHS RHS Total
     /// </summary>
@@ -363,19 +366,7 @@ public class VirtualMachine(bool Debug)
         else
             _instructionPointer += 3;
     }
-
-    /// <summary>
-    /// Copy [SourceLocation] [TargetLocation]
-    /// </summary>
-    private void Copy(int opCode)
-    {
-        var value = Read(_instructionPointer + 1 , opCode, 1);
-        var targetAddress = Read(_instructionPointer + 2 , opCode, 0);
-
-        _memory[targetAddress] = value;
-        
-        _instructionPointer += 3;
-    }
+    
 
     private byte Read(int location,int opCode, int mask)
     {

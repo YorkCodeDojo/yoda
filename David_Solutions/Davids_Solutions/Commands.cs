@@ -54,11 +54,6 @@ public static class OpCode
         public const byte JumpIfZeroMI = 0b1001_0001;  //145
         public const byte JumpIfZeroIM = 0b1001_0010;  //146
         public const byte JumpIfZeroII = 0b1001_0011;  //147
-        
-        public const byte CopyMM = 0b1010_0000;  //160
-        public const byte CopyMI = 0b1010_0001;  //161
-        public const byte CopyIM = 0b1010_0010;  //162
-        public const byte CopyII = 0b1010_0011;  //163
 }
 
 public static class Screen

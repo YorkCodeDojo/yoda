@@ -18,7 +18,7 @@ public static class Exercise06
             
             // ;Start of loop
             OpCode.JumpIfZeroMI,  pValuesRemaining, endAddress, // 0x06 Jump to the end if we are out of value.
-            OpCode.WriteIM,  Screen.LCD_0,   pDigit,  // 0x09 Display the first digit
+            OpCode.WriteIM,  Screen.LCD_2,   pDigit,  // 0x09 Display the first digit
             OpCode.WriteII,  Screen.ControlFlags,   0,  // 0x0C Refresh the screen
             OpCode.WriteII,  Screen.ControlFlags,   1,  // 0x0FRefresh the screen
             OpCode.DecI, pDigit, // 0x013
