@@ -26,6 +26,10 @@ export class VirtualMachine {
       process.stdin.resume();
       process.stdin.on("data", (chunk: Buffer) => {
         this.lastKey = chunk.toString("utf8");
+        if (this.lastKey === "\u0003") { // ^C
+          console.log("\nCTRL+C detected — shutting down VM.");
+          process.exit(0);
+        }
       });
     }
   }

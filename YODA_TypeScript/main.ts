@@ -4,7 +4,7 @@ import { VirtualMachine } from "./VirtualMachine";
 // Grab command line args
 const args = process.argv.slice(2);
 
-let folder = "/Users/davidbetteridge/SimpleInstructionMachine/Files";
+let folder = ".";
 if (args.length > 0) {
     folder = args[0];
 }
