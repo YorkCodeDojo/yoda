@@ -109,13 +109,204 @@ Bytes 0xF8 to 0xFD are mapped to the machines ASCII LCD display.
 Setting Bit 0 of the refresh byte to 1 will cause the screen to draw.
 
 
+# Commands
 
+## Halt - OpCode 0x00
+The `halt` command causes the machine to exit.
+
+## Wait - OpCode 0x01
+The `wait` command causes the CPU to sleep for 1/10 of a second.
+
+## Ret - OpCode 0x02
+The `ret` command sets the instruction pointer to the address at the top of the stack.
+If the stack is empty then an underflow error is reported.
+This is commonly called at the end of an Interrupt Service Routine (ISR) or after previously calling `JumpWithReturn`
+
+## Nop - OpCode 0x03
+Does nothing other than increase the instruction pointer.
+
+## Sif - OpCode 0x04
+Sets the interrupt flag.  This allows interrupts to call the ISRs.
+
+## Cif - OpCode 0x05
+Clears the interrupt flag.  This prevents interrupts from calling the ISRs.
+
+## SaveToFile - OpCodes 0x10 -> 0x17
+This is a 3 operand command which copies the specified values from memory to a file.
+The operands are
+
+| Name       | Description                            | Address Modes       |
+|------------|----------------------------------------|---------------------|
+| FileNumber | Number of the file to write 0-15       | Immediate or Direct |
+| Location   | Address of the first location to write | Immediate or Direct |
+| Length     | Number of bytes to write               | Immediate or Direct |
+
+
+| OpCode | File Number | Start Location | Length    |
+|--------|-------------|----------------|-----------|
+| 0x10   | Direct      | Direct         | Direct    |
+| 0x11   | Direct      | Direct         | Immediate |
+| 0x12   | Direct      | Immediate      | Direct    |
+| 0x13   | Direct      | Immediate      | Immediate |
+| 0x14   | Immediate   | Direct         | Direct    |
+| 0x15   | Immediate   | Direct         | Immediate |
+| 0x16   | Immediate   | Immediate      | Direct    |
+| 0x17   | Immediate   | Immediate      | Immediate |
+
+All the files are identical but files 8-15 are given a `.txt` file extension.
+
+
+
+## LoadFromFile - OpCodes 0x20 -> 0x23
+This is a 2 operand command which replaces the specified memory with the contents of a file
+
+| Name       | Description                            | Address Modes       |
+|------------|----------------------------------------|---------------------|
+| FileNumber | Number of the file to read 0-15        | Immediate or Direct |
+| Location   | Address of the first location to write | Immediate or Direct |
+
+
+| OpCode | File Number | Start Location |
+|--------|-------------|----------------|
+| 0x20   | Direct      | Direct         |
+| 0x21   | Direct      | Direct         |
+| 0x22   | Direct      | Immediate      |
+| 0x23   | Direct      | Immediate      |
+
+All the files are identical but files 8-15 are expected to have a `.txt` file extension.
+
+
+
+
+## Write - OpCodes 0x30 -> 0x33
+This is a 2 operand command which a value to a single memory location
+
+| Name     | Description                    | Address Modes       |
+|----------|--------------------------------|---------------------|
+| Value    | The value to write             | Immediate or Direct |
+| Location | The memory address to write to | Immediate or Direct |
+
+
+| OpCode | File Number | Location  |
+|--------|-------------|-----------|
+| 0x30   | Direct      | Direct    |
+| 0x31   | Direct      | Direct    |
+| 0x32   | Direct      | Immediate |
+| 0x33   | Direct      | Immediate |
+
+
+
+
+## Add - OpCodes 0x40 -> 0x47
+This is a 3 operand command which adds 2 values together.
+The operands are
+
+| Name   | Description             | Address Modes       |
+|--------|-------------------------|---------------------|
+| LHS    | First number            | Immediate or Direct |
+| RHS    | Second number           | Immediate or Direct |
+| Result | Location for the result | Immediate or Direct |
+
+
+| OpCode | LHS       | RHS       | Result    |
+|--------|-----------|-----------|-----------|
+| 0x40   | Direct    | Direct    | Direct    |
+| 0x41   | Direct    | Direct    | Immediate |
+| 0x42   | Direct    | Immediate | Direct    |
+| 0x43   | Direct    | Immediate | Immediate |
+| 0x44   | Immediate | Direct    | Direct    |
+| 0x45   | Immediate | Direct    | Immediate |
+| 0x46   | Immediate | Immediate | Direct    |
+| 0x47   | Immediate | Immediate | Immediate |
+
+
+## Sub - OpCodes 0x50 -> 0x57
+This is a 3 operand command which subtracts the RHS from the LHS
+The operands are
+
+| Name   | Description             | Address Modes       |
+|--------|-------------------------|---------------------|
+| LHS    | First number            | Immediate or Direct |
+| RHS    | Second number           | Immediate or Direct |
+| Result | Location for the result | Immediate or Direct |
+
+
+| OpCode | LHS       | RHS       | Result    |
+|--------|-----------|-----------|-----------|
+| 0x50   | Direct    | Direct    | Direct    |
+| 0x51   | Direct    | Direct    | Immediate |
+| 0x52   | Direct    | Immediate | Direct    |
+| 0x53   | Direct    | Immediate | Immediate |
+| 0x54   | Immediate | Direct    | Direct    |
+| 0x55   | Immediate | Direct    | Immediate |
+| 0x56   | Immediate | Immediate | Direct    |
+| 0x57   | Immediate | Immediate | Immediate |
+
+
+## Inc - OpCodes 0x60 -> 0x61
+This is a single operand command which increases a value by 1
+
+| Name     | Description                  | Address Modes      |
+|----------|------------------------------|--------------------|
+| Location | The memory address to update | Direct or Indirect |
+
+
+| OpCode | Location |
+|--------|----------|
+| 0x60   | Indirect |
+| 0x61   | Direct   |
+
+
+## Dec - OpCodes 0x70 -> 0x71
+This is a single operand command which decreases a value by 1
+
+| Name     | Description                  | Address Modes      |
+|----------|------------------------------|--------------------|
+| Location | The memory address to update | Direct or Indirect |
+
+
+| OpCode | Location |
+|--------|----------|
+| 0x70   | Indirect |
+| 0x71   | Direct   |
+
+
+
+## JumpIfZero - OpCodes 0x80 -> 0x83
+This is a 2 operand command which switches the instruction pointer to a different location,  but only if the specified value is 0
+If the value is not zero, then the instruction pointer moves to the next command as normal.
+Note,  the return address is NOT pushed onto the stack,  so `RET` cannot be used.
+
+| Name     | Description                   | Address Modes       |
+|----------|-------------------------------|---------------------|
+| Value    | The value to check            | Immediate or Direct |
+| Location | The memory address to jump to | Immediate or Direct |
+
+
+| OpCode | File Number | Location  |
+|--------|-------------|-----------|
+| 0x80   | Direct      | Direct    |
+| 0x81   | Direct      | Direct    |
+| 0x82   | Direct      | Immediate |
+| 0x83   | Direct      | Immediate |
+
+
+## JumpWithReturn - OpCodes 0x90 -> 0x91
+This is a 1 operand command which always switches the instruction pointer to a different location, but first pushes the
+next instruction pointer onto the stack.
+
+| Name     | Description                    | Address Modes       |
+|----------|--------------------------------|---------------------|
+| Location | The memory address to write to | Immediate or Direct |
+
+
+| OpCode | Location |
+|--------|----------|
+| 0x90   | Indirect |
+| 0x91   | Direct   |
 
 
 TODO:
 Document exercises
 Document operand types
-Document all commands
-Support for stack
-Support CIF SIF
 Different languages

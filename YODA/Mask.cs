@@ -14,8 +14,8 @@ public static class Mask
     public const byte Sub = 0b0101;
     public const byte Inc = 0b0110;
     public const byte Dec = 0b0111;
-    public const byte JumpIfZero = 0b1001;
-    public const byte JumpWithReturn = 0b1010;
+    public const byte JumpIfZero = 0b1000;
+    public const byte JumpWithReturn = 0b1001;
 }
 
 

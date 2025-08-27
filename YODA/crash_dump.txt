@@ -9,7 +9,7 @@
 08   51
 09   254
 0A   24
-0B   133    <---- INSTRUCTION POINTER
+0B   5
 0C   1
 0D   145
 0E   209
@@ -43,7 +43,7 @@
 2A   51
 2B   253
 2C   1
-2D   3
+2D   3    <---- INSTRUCTION POINTER
 2E   0
 2F   0
 30   0
@@ -191,8 +191,8 @@ BD   0
 BE   0
 BF   0
 C0   0
-C1   250
-C2   2
+C1   247
+C2   255
 C3   0
 C4   0
 C5   0
@@ -244,13 +244,13 @@ F2   0
 F3   0
 F4   0
 F5   0
-F6   0
-F7   5
-F8   0
-F9   0
-FA   45
-FB   0
-FC   0
+F6   23
+F7   45
+F8   32
+F9   32
+FA   32
+FB   32
+FC   32
 FD   1
 FE   24
 FF   16
