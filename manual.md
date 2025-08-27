@@ -1,7 +1,7 @@
 # Guide to Programming the YODA
 
 ## Running the machine
-The machine can optionally started with the following command line arguments:
+The machine can optionally be started with the following command line arguments:
 
 * The first argument (if provided) is the folder to look for the files in.   If missing then the current folder will be used.
 * The second argument is the `--debug` flag.  
@@ -32,7 +32,7 @@ Each command consists of an opcode and between 0 and 4 operands.  Opcodes and Op
 e.g.
 * The `halt` command (which causes the machine to stop) is defined by the opcode `0x00` and has no operands.
 
-* The `add` command is defined by the opcodes and is then followed by three operands.  The two numbers to add and the location for the result.
+* The `add` command is defined by its opcodes and is then followed by three operands.  The two numbers to add and the location for the result.
 
 ## Internal State
  
@@ -42,11 +42,11 @@ Internally the machine tracks for three items of state.  These are not directly 
 |---------------------|----------------------------------------|---------------|
 | Instruction Pointer | Address of the next command to execute | 0x00          |
 | Stack Pointer       | Address of the head of the stack       | 0xFC          |
-| Interrupts Enabled  | Controls if the interrupts will fire   | True          |
+| Interrupts Enabled  | Controls if the interrupts will fire   | False         |
 
 ## Instruction Pointer
 
-The `instruction pointer (IP)` contains the index of the memory location of the next command to execute.  When the program starts this set to 0. After the command is executed,  the instruction pointer is incremented by the length of the command (e.g. +1 for `halt`,  +4 for `add`).  
+The `instruction pointer (IP)` contains the index of the memory location of the next command to execute.  When the program starts this set to 0x00. After the command is executed,  the instruction pointer is incremented by the length of the command (e.g. +1 for `halt`,  +4 for `add`).  
 
 The exception to this are the `JUMP` commands which allow the instruction pointer to be changed to a specified address
 
@@ -60,18 +60,33 @@ All the files are identical but files 8-15 are given a `.txt` file extension.
 
 ## Operand Types
 
-There are two ways of providing the values for the operands.  Immediate Addressing and Memory Addressing.   
+There are three ways of providing the values for the operands.  `Immediate` Addressing, `Direct` Memory Addressing and `Indirect` Memory Addressing
 
-This is best explained by an example.
+This is best explained by looking at the `ADD` command as an example.  The add command has 3 operands,  which are the two values to add and the location to store the result.
+
+The two values to add can either be supplied as the actual values,  for example `ADD 7 10` would give 17.   This is called Immediate Addressing.
+
+Alternately,  the memory addresses in which to find the values can supplied.  For example ADD [7] [10] would add together the values held in memory locations 7 and 10.  This is called Direct Memory Addressing.
+
+For the 3rd operand,  the result,  Immediate Addressing doesn't make sense.  i.e.  You can't store the result in `23` but you can store the result in memory location 23 - i.e. direct memory addressing.   The final more complicated case is Indirect Memory Addresses,  this refers to the memory location held in memory location 23.
+
+For example
+
+Memory-34 == 3
+Memory-56 == 10
+
+`ADD 12 [34] [[56]]`  says add 12 to the value at location 34,  which in this case is 3 giving the total of 15. This is then written to the memory location
+pointed two by memory location 56,  in this case location 10.
+
+Memory-10 == 15
+
+By convention,  plain numbers 123 refer to the immediate values.  Numbers in square brackets [123]  are direct memory locations,  and in double brackets [[123]] are indirect memory locations.
 
 
+How do we tell the machine which addressing mode we wish to use for each operand?  For the YODA machine,  each command actually has multiple opcodes.  For example the ADD command has 8 different opcodes,  for the 8 possible combinations of addressing modes.
 
-`0x40`-`0x47`
-For the immediate version of ADD,  then `ADD 10 20 5` means take the numbers 10 and 20 add them together and place the total in memory location 5
-For the memory version of ADD, then `ADD 10 20 5` means take the value in memory location 10 and add it to the value in memory location 20.  Then write the total to the memory location
-specified by the value in memory location 5
+For example 0x47 means `ADD LHS RHS [Result]` and 0x42 means `ADD [LHS] RHS [[Result]]`
 
-Each command has several opcodes,  depending on which opcodes you wish to be IMMEDIATE or MEMORY addressing
 
 
 ## Interrupts
@@ -205,19 +220,19 @@ The operands are
 |--------|-------------------------|---------------------|
 | LHS    | First number            | Immediate or Direct |
 | RHS    | Second number           | Immediate or Direct |
-| Result | Location for the result | Immediate or Direct |
+| Result | Location for the result | Direct or Indirect  |
 
 
-| OpCode | LHS       | RHS       | Result    |
-|--------|-----------|-----------|-----------|
-| 0x40   | Direct    | Direct    | Direct    |
-| 0x41   | Direct    | Direct    | Immediate |
-| 0x42   | Direct    | Immediate | Direct    |
-| 0x43   | Direct    | Immediate | Immediate |
-| 0x44   | Immediate | Direct    | Direct    |
-| 0x45   | Immediate | Direct    | Immediate |
-| 0x46   | Immediate | Immediate | Direct    |
-| 0x47   | Immediate | Immediate | Immediate |
+| OpCode | LHS       | RHS       | Result   |
+|--------|-----------|-----------|----------|
+| 0x40   | Direct    | Direct    | Indirect |
+| 0x41   | Direct    | Direct    | Direct   |
+| 0x42   | Direct    | Immediate | Indirect |
+| 0x43   | Direct    | Immediate | Direct   |
+| 0x44   | Immediate | Direct    | Indirect |
+| 0x45   | Immediate | Direct    | Direct   |
+| 0x46   | Immediate | Immediate | Indirect |
+| 0x47   | Immediate | Immediate | Direct   |
 
 
 ## Sub - OpCodes 0x50 -> 0x57
@@ -308,5 +323,4 @@ next instruction pointer onto the stack.
 
 TODO:
 Document exercises
-Document operand types
 Different languages
