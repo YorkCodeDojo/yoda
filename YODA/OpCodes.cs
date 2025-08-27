@@ -33,7 +33,7 @@ public static class OpCode
     public const byte WriteMM = 0b0011_0000; //48
     public const byte WriteMI = 0b0011_0001; //49
     public const byte WriteIM = 0b0011_0010; //50
-    public const byte WriteII = 0b0011_0010; //51
+    public const byte WriteII = 0b0011_0011; //51
 
     public const byte AddMMD = 0b0100_0000; //64
     public const byte AddMMI = 0b0100_0001; //65

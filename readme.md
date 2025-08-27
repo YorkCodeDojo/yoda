@@ -155,3 +155,9 @@ Input module
 Interrupt can be triggered
 SETIQ locationToJumpTo
 RETIQ return from the interrupt
+
+
+
+TODO:
+Document exercises
+Different languages

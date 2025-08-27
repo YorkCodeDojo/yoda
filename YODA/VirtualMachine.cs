@@ -64,7 +64,6 @@ public class VirtualMachine(bool Debug)
                                 continue;
                             case OpCode.Ret:
                             {
-                                // Return from interrupt
                                 Ret();
                                 continue;
                             }
@@ -191,6 +190,8 @@ public class VirtualMachine(bool Debug)
         var sourceLocation = Read(_instructionPointer + 2 , opCode, 1);
         var length = Read(_instructionPointer + 3 , opCode, 0);
         
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} SaveToFile:: Writing {length} bytes starting at {sourceLocation:x8} to file {fileNumber}.");
+        
         await File.WriteAllBytesAsync(FilenameFromFileNumber(fileNumber), _memory[sourceLocation..(sourceLocation+length)]);
         
         _instructionPointer += 4;
@@ -210,6 +211,8 @@ public class VirtualMachine(bool Debug)
             throw new Exception("File too large");
         fileContents.CopyTo(_memory, targetLocation );
         
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} LoadFromFile:: Reading from file {fileNumber} into {targetLocation:x8}.");
+        
         _instructionPointer += 3;
     }
     
@@ -223,7 +226,7 @@ public class VirtualMachine(bool Debug)
         var location = Read(_instructionPointer + 1, opCode, 1);
         var value = Read(_instructionPointer + 2 , opCode, 0);
 
-        if (Debug) Console.WriteLine($"Write {value} into {location:X2}");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Write::  {value} into {location:X2}");
         
         UpdateScreenIfRequired(location, value);
         
@@ -271,8 +274,7 @@ public class VirtualMachine(bool Debug)
         var rhs = Read(_instructionPointer + 2 , opCode, 1);
         var location = Read(_instructionPointer + 3 , opCode, 0);
         
-        if (Debug) Console.WriteLine($"Add {lhs} + {rhs} = {lhs+rhs} ==> {location:x8}");
-        
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Add::  {lhs} + {rhs} = {lhs+rhs} ==> {location:x8}");
         _memory[location] = (byte)(lhs+rhs); // Can overflow
         _instructionPointer += 4;
     }
@@ -284,6 +286,9 @@ public class VirtualMachine(bool Debug)
     private void Inc(int opCode)
     {
         var location = Read(_instructionPointer + 1 , opCode, 0);
+        
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Inc::  Increasing value in {location:x8} from {_memory[location]} to {(_memory[location])+1}");
+    
         _memory[location]++;
         _instructionPointer += 2;
     }
@@ -295,7 +300,7 @@ public class VirtualMachine(bool Debug)
     {
         var location = Read(_instructionPointer + 1 , opCode, 0);
         
-        if (Debug) Console.WriteLine($"DEC: Decreasing value in {location:x8} from {_memory[location]} to {(_memory[location])-1}");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Dec::  Decreasing value in {location:x8} from {_memory[location]} to {(_memory[location])-1}");
         
         _memory[location]--;
         _instructionPointer += 2;
@@ -306,6 +311,7 @@ public class VirtualMachine(bool Debug)
     /// </summary>
     private void Nop()
     {
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Nop::");
         _instructionPointer++;
     }
 
@@ -314,6 +320,7 @@ public class VirtualMachine(bool Debug)
     /// </summary>
     private void Sif()
     {
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Sif:: Was previously {_interruptsEnabled}");
         _interruptsEnabled = true;
         _instructionPointer++;
     }
@@ -323,13 +330,14 @@ public class VirtualMachine(bool Debug)
     /// </summary>
     private void Cif()
     {
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Cif:: Was previously {_interruptsEnabled}");
         _interruptsEnabled = false;
         _instructionPointer++;
     }
     
     private async Task Wait()
     {
-        if (Debug) Console.WriteLine("Wait");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Wait::");
         await Task.Delay(100);
         _instructionPointer++;
     }
@@ -339,19 +347,19 @@ public class VirtualMachine(bool Debug)
     {
         var gotoAddress = PopFromStack();
         
-        if (Debug) Console.WriteLine($"Ret {_instructionPointer:x8} to {gotoAddress:x8}");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} Ret:: {_instructionPointer:x8} to {gotoAddress:x8}");
         _instructionPointer = gotoAddress;
     }
     
     /// <summary>
-    /// JumoIfZero ValueToCheck Address
+    /// JumpIfZero ValueToCheck Address
     /// </summary>
     private void JumpIfZero(int opCode)
     {
         var valueToCheck = Read(_instructionPointer + 1 , opCode, 1);
         var locationToJumpTo = Read(_instructionPointer + 2 , opCode, 0);
 
-        if (Debug) Console.WriteLine($"JumpIfZero ({opCode:b8}) - jump to {locationToJumpTo:X2} if {valueToCheck} is 0");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} JumpIfZero:: - jump to {locationToJumpTo:X2} if {valueToCheck} is 0");
          
         if (valueToCheck == 0)
             _instructionPointer = locationToJumpTo;
@@ -366,7 +374,7 @@ public class VirtualMachine(bool Debug)
     {
         var locationToJumpTo = Read(_instructionPointer + 1 , opCode, 0);
 
-        if (Debug) Console.WriteLine($"JumpWithReturn ({opCode:b8}) - jump to {locationToJumpTo:X2}");
+        if (Debug) Console.WriteLine($"{_instructionPointer:x8} JumpWithReturn:: - jump to {locationToJumpTo:X2}");
         PushToStack((byte)(_instructionPointer+2));
         _instructionPointer = locationToJumpTo;
     }

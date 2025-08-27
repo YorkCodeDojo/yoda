@@ -153,20 +153,20 @@ The operands are
 | Name       | Description                            | Address Modes       |
 |------------|----------------------------------------|---------------------|
 | FileNumber | Number of the file to write 0-15       | Immediate or Direct |
-| Location   | Address of the first location to write | Immediate or Direct |
+| Location   | Address of the first location to write | Direct or Indirect  |
 | Length     | Number of bytes to write               | Immediate or Direct |
 
 
 | OpCode | File Number | Start Location | Length    |
 |--------|-------------|----------------|-----------|
-| 0x10   | Direct      | Direct         | Direct    |
-| 0x11   | Direct      | Direct         | Immediate |
-| 0x12   | Direct      | Immediate      | Direct    |
-| 0x13   | Direct      | Immediate      | Immediate |
-| 0x14   | Immediate   | Direct         | Direct    |
-| 0x15   | Immediate   | Direct         | Immediate |
-| 0x16   | Immediate   | Immediate      | Direct    |
-| 0x17   | Immediate   | Immediate      | Immediate |
+| 0x10   | Direct      | InDirect       | Direct    |
+| 0x11   | Direct      | InDirect       | Immediate |
+| 0x12   | Direct      | Direct         | Direct    |
+| 0x13   | Direct      | Direct         | Immediate |
+| 0x14   | Immediate   | InDirect       | Direct    |
+| 0x15   | Immediate   | InDirect       | Immediate |
+| 0x16   | Immediate   | Direct         | Direct    |
+| 0x17   | Immediate   | Direct         | Immediate |
 
 All the files are identical but files 8-15 are given a `.txt` file extension.
 
@@ -178,15 +178,15 @@ This is a 2 operand command which replaces the specified memory with the content
 | Name       | Description                            | Address Modes       |
 |------------|----------------------------------------|---------------------|
 | FileNumber | Number of the file to read 0-15        | Immediate or Direct |
-| Location   | Address of the first location to write | Immediate or Direct |
+| Location   | Address of the first location to write | Direct or Indirect  |
 
 
 | OpCode | File Number | Start Location |
 |--------|-------------|----------------|
-| 0x20   | Direct      | Direct         |
-| 0x21   | Direct      | Direct         |
-| 0x22   | Direct      | Immediate      |
-| 0x23   | Direct      | Immediate      |
+| 0x20   | Direct      | InDirect       |
+| 0x21   | Direct      | Direct.        |
+| 0x22   | Immediate   | InDirect.      |
+| 0x23   | Immediate   | Direct         |
 
 All the files are identical but files 8-15 are expected to have a `.txt` file extension.
 
@@ -199,15 +199,15 @@ This is a 2 operand command which a value to a single memory location
 | Name     | Description                    | Address Modes       |
 |----------|--------------------------------|---------------------|
 | Value    | The value to write             | Immediate or Direct |
-| Location | The memory address to write to | Immediate or Direct |
+| Location | The memory address to write to | Direct or Indirect  |
 
 
-| OpCode | File Number | Location  |
-|--------|-------------|-----------|
-| 0x30   | Direct      | Direct    |
-| 0x31   | Direct      | Direct    |
-| 0x32   | Direct      | Immediate |
-| 0x33   | Direct      | Immediate |
+| OpCode | File Number | Start Location |
+|--------|-------------|----------------|
+| 0x30   | Direct      | InDirect       |
+| 0x31   | Direct      | Direct.        |
+| 0x32   | Immediate   | InDirect.      |
+| 0x33   | Immediate   | Direct         |
 
 
 
@@ -243,19 +243,19 @@ The operands are
 |--------|-------------------------|---------------------|
 | LHS    | First number            | Immediate or Direct |
 | RHS    | Second number           | Immediate or Direct |
-| Result | Location for the result | Immediate or Direct |
+| Result | Location for the result | Direct or Indirect  |
 
 
-| OpCode | LHS       | RHS       | Result    |
-|--------|-----------|-----------|-----------|
-| 0x50   | Direct    | Direct    | Direct    |
-| 0x51   | Direct    | Direct    | Immediate |
-| 0x52   | Direct    | Immediate | Direct    |
-| 0x53   | Direct    | Immediate | Immediate |
-| 0x54   | Immediate | Direct    | Direct    |
-| 0x55   | Immediate | Direct    | Immediate |
-| 0x56   | Immediate | Immediate | Direct    |
-| 0x57   | Immediate | Immediate | Immediate |
+| OpCode | LHS       | RHS       | Result   |
+|--------|-----------|-----------|----------|
+| 0x50   | Direct    | Direct    | Indirect |
+| 0x51   | Direct    | Direct    | Direct   |
+| 0x52   | Direct    | Immediate | Indirect |
+| 0x53   | Direct    | Immediate | Direct   |
+| 0x54   | Immediate | Direct    | Indirect |
+| 0x55   | Immediate | Direct    | Direct   |
+| 0x56   | Immediate | Immediate | Indirect |
+| 0x57   | Immediate | Immediate | Direct   |
 
 
 ## Inc - OpCodes 0x60 -> 0x61
@@ -320,7 +320,3 @@ next instruction pointer onto the stack.
 | 0x90   | Indirect |
 | 0x91   | Direct   |
 
-
-TODO:
-Document exercises
-Different languages
