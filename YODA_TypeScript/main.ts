@@ -9,7 +9,7 @@ if (args.length > 0) {
     folder = args[0];
 }
 
-const debug = args.length > 1 && args[1] === "--debug";
+const debug = args.length > 1 && args[1] === "debug";
 
 console.log(
     "Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module"

@@ -95,7 +95,7 @@ export class VirtualMachine {
             lines.push(`${i.toString(16).padStart(2, "0")}   ${this.memory[i]}`);
         }
         await fs.writeFile("crash_dump.txt", lines.join("\n"));
-        return;
+        process.exit(0);
       }
     }
 

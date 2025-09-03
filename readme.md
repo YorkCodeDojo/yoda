@@ -1,66 +1,40 @@
-## Introduction
+--- 10TH SEPT 1951 :: IMPORTANT MESSAGE TO ALL TEAMS FROM THE FLIGHT CENTRE ---
 
-The City of York has decided to enter the space program.  However, due to very tight time constraints they have decided to outsource the programming of their flight computer to your company.
+To all engineering teams,
 
-The computer is a custom-built machine, which runs York’s Obscenely Dumb Architecture.  (YODA)
+As you may have seen from our press release,  The City of York has decided to enter the space race,  and due to time constraints they have decided to out-source the programming of their flight systems to our company.
 
-Your task will be to complete a set of tasks to ensure the spaceship reaches the moon and doesn't come crashing down in the Ouse.
+They have developed a computer especially for this task,  named the YODA and have provided us with the attached manual.md file.
 
-One thing....  the fancy AI tools like cursor won't work in space,  so you will need to bring your favourite hex editor.
+--- END OF MESSAGE --
 
-
-## The machine
-
-For such an important task,  the machine is actually pretty basic.  
-
-
-
-
-Example File
-For example,  if the first 5 bytes of boot file contained
-
-IP
-?? 02 07 05 00 
-
-Then the instruction pointers starts at 0x00 which contains the ADD command.  The numbers 2 and 7 are added together
-and placed into memory location 5.  The instruction pointer then advances 4 bytes to location 0x04
-
-            IP 
-?? 02 07 05 00 09
-
-Location 0x04 contains a 0 which is the halt command so then the program exits.
-
-
-
+---
 
 ## Exercise 1
-Before the spaceship can be launched a couple of checks need to be carried out.  First we need to check that the machine is
-capable of running a program.
+Before the spaceship can be launched a couple of checks need to be carried out.  First we need to check that the machine is capable of running a program.
 
-The simplest program you can write is one which does nothing and stops straight away.  This can be done by 
-having your program just contain the halt command.  
+The simplest program you can write is one which does nothing and stops straight away.  This can be done by having your program just contain the halt command.  
 
 Populate the boot file with a single byte with the value 0x00 (0 is the op code for halt)
 
-Run the virtual machine and check it runs without an error.
+Run the machine and check it completes without an error.
 
 
 ## Exercise 2
-We also need to check that the machine is correctly reporting errors.  The easiest way to crash the machine is to
-get it an opcode it doesn't understand.   For example 255 (0xFF)
+We also need to check that the machine is correctly reporting errors.  The easiest way to crash the machine is to give it an opcode it doesn't understand.   For example 255 (0xFF)
 
-Run the virtual machine and check it gives you an error.  It should also create a couple of crash_dump files to aid you with your troubleshooting.
+Run the machine and check it gives you an error.  It should also create a couple of `crash_dump` files to aid you with your troubleshooting.
 
 
 ## Exercise 3
 We can now launch the spacecraft.  To do this,  we need to write 5 bytes to file 0 containing the values 5 4 3 2 1
 
-Your program should consist of the 
-  WriteToFile command with it's 3 operands  (ie 4 bytes)
-  Halt command (1 byte)
-  5 bytes of memory containing your 5 values
+Your program should consist of 
+1.  `WriteToFile` command with it's 3 operands  (ie 4 bytes)
+2.  `Halt command` (1 byte)
+3.  5 bytes of memory containing your 5 values
 
-Run the virtual machine, and check that File0 is correctly populated with your 5 values
+Run the machine, and check that `File0` is correctly populated with your 5 values
 
 
 ## Exercise 4
@@ -89,7 +63,7 @@ In addition to your previous commands,  you will also need to use the `LoadFromF
 To all engineering teams,
 
 We are concerned about the time it is taking to write these applications,  and the number of reported bugs.  We tasked a top-rated external
-consultancy to investigate about how things could be streamlined.  They have done a great job and have produced a 2000 page report.  The summary
+consultancy to investigate about how things could be streamlined.  They have done a great job and have produced a 2000-page report.  The summary
 of this report is that maybe programming directly in bytes is the issue.
 
 One of their main recommendations is that
@@ -107,57 +81,38 @@ Flight Centre,
 --- END OF MESSAGE --
 
 
-
 ## Exercise 6
 
-Add 2 numbers
+Sorry to keep missing you around,  but we have changed the requirements again.  To launch the spacecraft,  5 4 3 2 1 should be written to the LCD output.
+The digits should be displayed one at a time,  with a 100ms delay between them.
+
 
 
 ## Exercise 7
 
-Subtract 2 numbers
+The control system can now be written.  The current position of the craft can be shown on the LCD by a single `-`
+
+For example
+
+```
+[ ][ ][-][ ][ ]
+```
+
+The astronauts should be able to position the craft with the use of the left/right arrow keys.
+
+For example after pressing the right arrow twice
+
+```
+[ ][ ][ ][ ][-]
+```
+
+
+Hint: Read section on interrupts
+
+
+## Exercise 8
+
+One of the other development teams is having trouble getting the `SUB` opcodes to work.  Can you provide them with a workaround?
 
 
 
-## Exercise 1
-To start rocket running, write a program (in file 0) which writes the value 123 into file 1. 
-
-
-
-## Exercise 2
-Write a program to add 1 to a number.
-
-Steps:
-* Manually populate file 1 with the number you wish to increase.
-* Write a program (in file 0) which
-  * Loads in the contents of file 1
-  * Increments the value
-  * Writes the contents back to file 1
-
-
-## Exercise 2
-Write a program to add 2 (1 byte) numbers together
-
-Steps:
-* Manually populate file 1 with the two numbers you wish to add.
-* Write a program (in file 0) which
-    * Loads in the contents of file 1
-    * Adds the values
-    * Writes the contents back to file 1
-
-
-
-
-Output module
-setting bit 0 of byte X to a 1 will write the contents of the last 7 bytes to the screen
-
-Input module
-Interrupt can be triggered
-SETIQ locationToJumpTo
-RETIQ return from the interrupt
-
-
-
-TODO:
-Document exercises
-Different languages

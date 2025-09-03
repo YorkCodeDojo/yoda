@@ -38,5 +38,8 @@ public static class Exercise04
             70,                   //F
         ]);
         
+        if (Path.Exists(Path.Combine(Constants.FilesFolder, "9.txt")))
+            File.Delete(Path.Combine(Constants.FilesFolder, "9.txt"));
+        
     }
 }

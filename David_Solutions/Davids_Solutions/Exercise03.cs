@@ -7,8 +7,8 @@ public static class Exercise03
     /// </summary>
     public static async Task Do()
     {
-        
-        await File.WriteAllBytesAsync(Constants.BootFile, 
+
+        await File.WriteAllBytesAsync(Constants.BootFile,
         [
             // Commands
             23,                    // WRITE TO FILE
@@ -26,5 +26,7 @@ public static class Exercise03
             1,                   // (our value)
         ]);
         
+        if (Path.Exists(Path.Combine(Constants.FilesFolder, "0")))
+            File.Delete(Path.Combine(Constants.FilesFolder, "0"));
     }
 }

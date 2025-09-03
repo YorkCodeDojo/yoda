@@ -66,7 +66,7 @@ This is best explained by looking at the `ADD` command as an example.  The add c
 
 The two values to add can either be supplied as the actual values,  for example `ADD 7 10` would give 17.   This is called Immediate Addressing.
 
-Alternately,  the memory addresses in which to find the values can supplied.  For example ADD [7] [10] would add together the values held in memory locations 7 and 10.  This is called Direct Memory Addressing.
+Alternately,  the memory addresses in which to find the values can be supplied.  For example ADD [7] [10] would add together the values held in memory locations 7 and 10.  This is called Direct Memory Addressing.
 
 For the 3rd operand,  the result,  Immediate Addressing doesn't make sense.  i.e.  You can't store the result in `23` but you can store the result in memory location 23 - i.e. direct memory addressing.   The final more complicated case is Indirect Memory Addresses,  this refers to the memory location held in memory location 23.
 
@@ -100,7 +100,7 @@ When the outside world needs to inform the machine about an event, then an inter
 
 i.e. Address 0xFE needs to contain the address of the code to run when the right arrow is pressed.  This code is know as the interrupt service routine (ISR)
 
-When your code has finished processing the interrupt it should called `RET` to return back to the instruction is was processing before the interrupt was triggered.
+When your code has finished processing the interrupt it should call `RET` to return back to the instruction it was processing before the interrupt was triggered.
 
 Other related commands are
 * `WAIT` which causes the CPU to sleep for 1/10 of a second (100 ms)
@@ -133,7 +133,7 @@ The `halt` command causes the machine to exit.
 The `wait` command causes the CPU to sleep for 1/10 of a second.
 
 ## Ret - OpCode 0x02
-The `ret` command sets the instruction pointer to the address at the top of the stack.
+The `ret` command sets the instruction pointer to the address popped off the top of the stack.
 If the stack is empty then an underflow error is reported.
 This is commonly called at the end of an Interrupt Service Routine (ISR) or after previously calling `JumpWithReturn`
 
