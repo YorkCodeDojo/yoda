@@ -4,7 +4,20 @@
 The machine can optionally be started with the following command line arguments:
 
 * The first argument (if provided) is the folder to look for the files in.   If missing then the current folder will be used.
-* The second argument is the `--debug` flag.  
+* The second argument switches the debug output on/off.
+
+
+### .NET
+```shell
+dotnet run ../FIles --debug
+```
+
+### Node
+```shell
+node ../FIles debug
+```
+
+
 
 
 ## Memory
