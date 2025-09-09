@@ -115,4 +115,6 @@ Hint: Read section on interrupts
 One of the other development teams is having trouble getting the `SUB` opcodes to work.  Can you provide them with a workaround?
 
 
+## Exercise 9
 
+Design an assembly language format for programming this machine.

@@ -9,12 +9,12 @@ The machine can optionally be started with the following command line arguments:
 
 ### .NET
 ```shell
-dotnet run ../FIles --debug
+dotnet run ../Files --debug
 ```
 
 ### Node
 ```shell
-node ../FIles debug
+node ../Files debug
 ```
 
 
@@ -73,7 +73,7 @@ All the files are identical but files 8-15 are given a `.txt` file extension.
 
 ## Operand Types
 
-There are three ways of providing the values for the operands.  `Immediate` Addressing, `Direct` Memory Addressing and `Indirect` Memory Addressing
+There are two ways of providing the values for the operands.  `Immediate` Addressing and `Direct` Memory Addressing
 
 This is best explained by looking at the `ADD` command as an example.  The add command has 3 operands,  which are the two values to add and the location to store the result.
 
@@ -81,17 +81,13 @@ The two values to add can either be supplied as the actual values,  for example 
 
 Alternately,  the memory addresses in which to find the values can be supplied.  For example ADD [7] [10] would add together the values held in memory locations 7 and 10.  This is called Direct Memory Addressing.
 
-For the 3rd operand,  the result,  Immediate Addressing doesn't make sense.  i.e.  You can't store the result in `23` but you can store the result in memory location 23 - i.e. direct memory addressing.   The final more complicated case is Indirect Memory Addresses,  this refers to the memory location held in memory location 23.
+For the 3rd operand,  the result, the operand expects the memory address to be supplied.  For Example ADD 7 10 [23] stores the result of adding 7+10 into memory location 23.  
 
-For example
-
-Memory-34 == 3
-Memory-56 == 10
+Complicated! but the result operand can also hold the memory location in which to find the memory location in which to store the result.  This is known as indirect addressing.
 
 `ADD 12 [34] [[56]]`  says add 12 to the value at location 34,  which in this case is 3 giving the total of 15. This is then written to the memory location
 pointed two by memory location 56,  in this case location 10.
 
-Memory-10 == 15
 
 By convention,  plain numbers 123 refer to the immediate values.  Numbers in square brackets [123]  are direct memory locations,  and in double brackets [[123]] are indirect memory locations.
 
@@ -111,7 +107,7 @@ When the outside world needs to inform the machine about an event, then an inter
 | 0xFE    | Right Arrow pressed |
 | 0xFF    | Left Arrow pressed  |
 
-i.e. Address 0xFE needs to contain the address of the code to run when the right arrow is pressed.  This code is know as the interrupt service routine (ISR)
+i.e. Address 0xFE needs to contain the address of the code to run when the right arrow is pressed.  This code is known as the interrupt service routine (ISR)
 
 When your code has finished processing the interrupt it should call `RET` to return back to the instruction it was processing before the interrupt was triggered.
 
@@ -135,6 +131,7 @@ Bytes 0xF8 to 0xFD are mapped to the machines ASCII LCD display.
 | 0xFD    | Refresh     |
 
 Setting Bit 0 of the refresh byte to 1 will cause the screen to draw.
+The other bits of this byte are ignored.
 
 
 # Commands
@@ -207,7 +204,7 @@ All the files are identical but files 8-15 are expected to have a `.txt` file ex
 
 
 ## Write - OpCodes 0x30 -> 0x33
-This is a 2 operand command which a value to a single memory location
+This is a 2 operand command which writes a value to a single memory location
 
 | Name     | Description                    | Address Modes       |
 |----------|--------------------------------|---------------------|
@@ -222,7 +219,7 @@ This is a 2 operand command which a value to a single memory location
 | 0x32   | Immediate | Direct    |
 | 0x33   | Immediate | Immediate |
 
-
+For example `0x33 0x10 0x05` writes the value 5 into memory location 0x10 
 
 
 ## Add - OpCodes 0x40 -> 0x47

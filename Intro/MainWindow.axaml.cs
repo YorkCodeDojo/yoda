@@ -30,10 +30,11 @@ public partial class MainWindow : Window
         new ListSlide(["Left Arrow Pressed", "Address in 0xFE looked up", "IP changed to that address", "Code Runs", "RET returns back to previous location"]),
         
         // Screen Memory
+        new MemorySlide("Screen Memory", ["0xF8: 32", "0xF9: 32", "0xFA: 32", "0xFB: 32", "0xFC: 32", "0xFD: 1"], 75, -1),
         
         new UrlSlide("https://github.com/YorkCodeDojo/yoda", 50),
     ];
-
+    
     private int _slideNumber = 0;
    
     public MainWindow()
