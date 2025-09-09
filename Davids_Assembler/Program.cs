@@ -2,6 +2,7 @@
 
 using System.Globalization;
 
+// Address modes,  V means Value or A means Address
 var commandInfo = new Dictionary<string, CommandInfo>
 {
    ["HALT"] = new () { OperandCount = 0, BaseOpcode = 0b0000_0000},
@@ -10,19 +11,24 @@ var commandInfo = new Dictionary<string, CommandInfo>
    ["NOP"] = new () { OperandCount = 0, BaseOpcode = 0b0000_0100},
    ["SIF"] = new () { OperandCount = 0, BaseOpcode = 0b0000_0101},
    ["CIF"] = new () { OperandCount = 0, BaseOpcode = 0b0000_0110},
+   
+   ["WRITE"] = new () { OperandCount = 2, BaseOpcode = 0b0011_0000},
+   
    ["DEC"] = new () { OperandCount = 1, BaseOpcode = 0b0111_0000},
    ["INC"] = new () { OperandCount = 1, BaseOpcode = 0b0110_0000},
+
    ["JUMP"] = new () { OperandCount = 1, BaseOpcode = 0b1001_0000},
-   ["WRITE"] = new () { OperandCount = 2, BaseOpcode = 0b0011_0000},
    ["JUMP_IF_ZERO"] = new () { OperandCount = 2, BaseOpcode = 0b1000_0000},
+   
    ["ADD"] = new () { OperandCount = 3, BaseOpcode = 0b0100_0000},
    ["SUB"] = new () { OperandCount = 3, BaseOpcode = 0b0101_0000},
+   
    ["SAVE"] = new () { OperandCount = 3, BaseOpcode = 0b0001_0000},
-   ["LOAD"] = new () { OperandCount = 2, BaseOpcode = 0b0010_0000}
+   ["LOAD"] = new () { OperandCount = 2, BaseOpcode = 0b0010_0000 }
 };
 
 
-var lines = File.ReadAllLines("/Users/davidbetteridge/SimpleInstructionMachine/Davids_Assembler/sample.txt")
+var lines = File.ReadAllLines("/Users/davidbetteridge/SimpleInstructionMachine/Davids_Assembler/exercise_06.txt")
                 .Select((t,i) => new SourceLine { LineNumber = i, Text = t.Trim()})
                 .ToArray();
 
@@ -129,6 +135,7 @@ foreach (var command in commands)
 }
 
 // Pass 4, write the boot file
+var contents = new List<byte>();
 foreach (var command in commands)
 {
    var info = commandInfo[command.Mnemonic];
@@ -136,7 +143,12 @@ foreach (var command in commands)
 
    for (var i = 0; i < command.Operands.Length; i++)
    {
-      //TODO: Support indirect addressing
+      if (command.Operands[i].StartsWith("[["))
+      {
+         Console.Error.WriteLine($"Line {lines[command.LineNumber].LineNumber}: The mnemonic {command.Mnemonic} does not support indirect addressing");
+         return;
+      }
+      // Choice between Immediate and Direct
       if (command.Operands[i].StartsWith('['))
       {
          // Direct addressing - 0 - no change
@@ -145,8 +157,8 @@ foreach (var command in commands)
       else
       {
          // Immediate - 1
-         opcode += 1 << i;
-      }
+         opcode += 1 << (command.Operands.Length - 1 - i);
+      }         
 
       if (!command.Operands[i].StartsWith("0x"))
       {
@@ -160,8 +172,14 @@ foreach (var command in commands)
    {
       Console.WriteLine("  " + o);   
    }
-
+   
+   contents.Add((byte)opcode);
+   foreach (var o in command.Operands) 
+      contents.Add(byte.Parse(o[2..], NumberStyles.HexNumber));
+   
 }
+
+await File.WriteAllBytesAsync("/Users/davidbetteridge/SimpleInstructionMachine/Files/boot", contents.ToArray());
 
 return;
 

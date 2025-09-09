@@ -3,7 +3,7 @@
    pScreenAddress = 0xC1
    pAlwaysZero = 0xD1
    
-   ;ASCII code for space
+   ;ASCII code for ' '
    space = 0x20
    
    ;ASCII code for -
@@ -32,7 +32,7 @@
     ; Wait for interrupts
 :wait_loop
     WAIT
-    JUMP_IF_ZERO [pAlwaysZero] wait_loop
+    JUMP_IF_ZERO pAlwaysZero wait_loop
 
 :isr_left
    WRITE [pScreenAddress] space
@@ -47,7 +47,7 @@
    RET
    
 :display   
-   ADD pCraftLocation LCD_0 pScreenAddress
+   ADD [pCraftLocation] LCD_0 pScreenAddress
    WRITE [pScreenAddress] dash
    WRITE ControlFlags 0
    WRITE ControlFlags 1

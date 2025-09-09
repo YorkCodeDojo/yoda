@@ -1,0 +1,28 @@
+[CONSTANTS]
+   pValuesRemaining = 0xD2
+   pDigit = 0xD1
+   always_zero = 0xD0
+   LCD_2 = 0xFA
+   ControlFlags = 0xFD
+    
+
+[PROGRAM]
+    
+    ; Number of values remaining
+    WRITE pValuesRemaining 5
+
+    ; ASCII code of the first value to display (5)
+    WRITE pDigit 0x35     
+
+:start_of_loop
+    JUMP_IF_ZERO pValuesRemaining end_of_loop
+    WRITE LCD_2 [pDigit]
+    WRITE ControlFlags 0
+    WRITE ControlFlags 1    
+    DEC pDigit
+    DEC pValuesRemaining
+    WAIT
+    JUMP_IF_ZERO always_zero start_of_loop
+    
+:end_of_loop 
+    HALT
