@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{6E93DD06
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intro", "Intro\Intro.csproj", "{B516CE2F-EF1D-4A27-AE49-CC389AC0ACEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Davids_Assembler", "Davids_Assembler\Davids_Assembler.csproj", "{71892544-263B-403A-9923-2D28D766D302}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{B516CE2F-EF1D-4A27-AE49-CC389AC0ACEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B516CE2F-EF1D-4A27-AE49-CC389AC0ACEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B516CE2F-EF1D-4A27-AE49-CC389AC0ACEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71892544-263B-403A-9923-2D28D766D302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71892544-263B-403A-9923-2D28D766D302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71892544-263B-403A-9923-2D28D766D302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71892544-263B-403A-9923-2D28D766D302}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

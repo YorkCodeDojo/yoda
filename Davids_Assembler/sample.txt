@@ -1,0 +1,57 @@
+[CONSTANTS]
+   pCraftLocation = 0xC2
+   pScreenAddress = 0xC1
+   pAlwaysZero = 0xD1
+   
+   ;ASCII code for space
+   space = 0x20
+   
+   ;ASCII code for -
+   dash = 0x2D
+   
+   LCD_0 = 0xF8
+   LCD_1 = 0xF9
+   LCD_2 = 0xFA
+   LCD_3 = 0xFB
+   LCD_4 = 0xFC
+   ControlFlags = 0xFD
+   ivRightArrow = 0xFE
+   ivLeftArrow = 0xFF
+   
+
+   
+   
+
+[PROGRAM]
+    ; Display the craft in its initial position
+    WRITE pCraftLocation 2
+    JUMP display
+
+    ; Setup interrupts
+    WRITE ivLeftArrow isr_left
+    WRITE ivRightArrow isr_right
+    SIF
+            
+    ; Wait for interrupts
+:wait_loop
+    WAIT
+    JUMP_IF_ZERO pAlwaysZero wait_loop
+
+:isr_left
+   WRITE [pScreenAddress] space
+   DEC pCraftLocation
+   JUMP display
+   RET
+
+:isr_right
+   WRITE [pScreenAddress] space
+   INC pCraftLocation
+   JUMP display
+   RET
+   
+:display   
+   ADD pCraftLocation LCD_0 pScreenAddress
+   WRITE [pScreenAddress] dash
+   WRITE ControlFlags 0
+   WRITE ControlFlags 1
+   RET
