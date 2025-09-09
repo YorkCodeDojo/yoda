@@ -5,7 +5,7 @@ using Avalonia.Media;
 
 namespace Intro;
 
-public class AssemblySlide(string title, string[] textToDisplay, int fontSize, int instructionPointer) : Control, ISlide
+public class MemorySlide(string title, string[] textToDisplay, int fontSize, int instructionPointer) : Control, ISlide
 {
     public DisplayResult Display(bool reset)
     {
