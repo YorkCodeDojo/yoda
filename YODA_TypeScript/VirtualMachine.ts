@@ -258,8 +258,9 @@ export class VirtualMachine {
   }
 
   private jumpIfZero(opCode: number) {
-    const valueToCheck = this.read(this.instructionPointer + 1, opCode, 1);
+    const addressToCheck = this.read(this.instructionPointer + 1, opCode, 1);
     const locationToJumpTo = this.read(this.instructionPointer + 2, opCode, 0);
+    const valueToCheck = this.memory[addressToCheck]
     if (this.debug)
       console.log(`${this.instructionPointer.toString(16)} JumpIfZero:: to ${locationToJumpTo.toString(16)} if ${valueToCheck} == 0`);
     if (valueToCheck === 0) this.instructionPointer = locationToJumpTo;

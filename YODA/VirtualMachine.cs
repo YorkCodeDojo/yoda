@@ -356,9 +356,10 @@ public class VirtualMachine(bool Debug)
     /// </summary>
     private void JumpIfZero(int opCode)
     {
-        var valueToCheck = Read(_instructionPointer + 1 , opCode, 1);
+        var addressToCheck = Read(_instructionPointer + 1 , opCode, 1);
         var locationToJumpTo = Read(_instructionPointer + 2 , opCode, 0);
-
+        var valueToCheck = _memory[addressToCheck];
+        
         if (Debug) Console.WriteLine($"{_instructionPointer:x8} JumpIfZero:: - jump to {locationToJumpTo:X2} if {valueToCheck} is 0");
          
         if (valueToCheck == 0)

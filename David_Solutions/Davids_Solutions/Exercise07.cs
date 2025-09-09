@@ -23,7 +23,7 @@ public static class Exercise07
             
             // Wait for interrupts
             OpCode.Wait,        //0x0C
-            OpCode.JumpIfZeroMI, 0xD1, 0xC, //0x0D
+            OpCode.JumpIfZeroII, 0xD1, 0xC, //0x0D
             
             // ISR for the Left Arrow
             OpCode.WriteMI,  pScreenAddress,  (byte)' ',  // 0x10 Clear the craft

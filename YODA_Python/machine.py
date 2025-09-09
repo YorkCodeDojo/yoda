@@ -313,8 +313,9 @@ class VirtualMachine:
         self._instruction_pointer = goto_address
 
     def jump_if_zero(self, op_code):
-        value_to_check = self.read(self._instruction_pointer + 1, op_code, 1)
+        address_to_check = self.read(self._instruction_pointer + 1, op_code, 1)
         location_to_jump_to = self.read(self._instruction_pointer + 2, op_code, 0)
+        value_to_check = self._memory[address_to_check]
         if self.debug:
             print(f"{self._instruction_pointer:08x} JumpIfZero:: jump {location_to_jump_to:02X} if {value_to_check}==0")
         if value_to_check == 0:

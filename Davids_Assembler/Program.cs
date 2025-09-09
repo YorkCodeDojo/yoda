@@ -1,4 +1,7 @@
 ﻿// Info about each command
+
+using System.Globalization;
+
 var commandInfo = new Dictionary<string, CommandInfo>
 {
    ["HALT"] = new () { OperandCount = 0, BaseOpcode = 0b0000_0000},
@@ -118,7 +121,7 @@ foreach (var command in commands)
    for (var i = 0; i < command.Operands.Length; i++)
    {
       foreach (var label in labels)
-         command.Operands[i] = command.Operands[i].Replace(label.Key, label.Value.ToString());
+         command.Operands[i] = command.Operands[i].Replace(label.Key, "0x" + label.Value.ToString("X2"));
       
       foreach (var constant in constants)
          command.Operands[i] = command.Operands[i].Replace(constant.Key, constant.Value);
@@ -144,12 +147,18 @@ foreach (var command in commands)
          // Immediate - 1
          opcode += 1 << i;
       }
+
+      if (!command.Operands[i].StartsWith("0x"))
+      {
+         command.Operands[i] = "0x" + int.Parse(command.Operands[i], NumberStyles.None).ToString();
+      }
    }
-   
-   Console.WriteLine(opcode.ToString("X2"));
+
+   Console.WriteLine(command.Mnemonic);
+   Console.WriteLine("  0x" + opcode.ToString("X2"));
    foreach (var o in command.Operands)
    {
-      Console.WriteLine(o);
+      Console.WriteLine("  " + o);   
    }
 
 }

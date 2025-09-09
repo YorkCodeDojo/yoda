@@ -17,10 +17,7 @@
    ControlFlags = 0xFD
    ivRightArrow = 0xFE
    ivLeftArrow = 0xFF
-   
-
-   
-   
+     
 
 [PROGRAM]
     ; Display the craft in its initial position
@@ -35,7 +32,7 @@
     ; Wait for interrupts
 :wait_loop
     WAIT
-    JUMP_IF_ZERO pAlwaysZero wait_loop
+    JUMP_IF_ZERO [pAlwaysZero] wait_loop
 
 :isr_left
    WRITE [pScreenAddress] space

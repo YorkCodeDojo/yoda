@@ -17,14 +17,14 @@ public static class Exercise06
             OpCode.WriteII, pDigit, (byte)'5',     // 0x03 Initialise ASCII value of first digit to display
             
             // ;Start of loop
-            OpCode.JumpIfZeroMI,  pValuesRemaining, endAddress, // 0x06 Jump to the end if we are out of value.
+            OpCode.JumpIfZeroII,  pValuesRemaining, endAddress, // 0x06 Jump to the end if we are out of value.
             OpCode.WriteIM,  Screen.LCD_2,   pDigit,  // 0x09 Display the first digit
             OpCode.WriteII,  Screen.ControlFlags,   0,  // 0x0C Refresh the screen
             OpCode.WriteII,  Screen.ControlFlags,   1,  // 0x0FRefresh the screen
             OpCode.DecI, pDigit, // 0x013
             OpCode.DecI, pValuesRemaining, //0x015
             OpCode.Wait,  //0x017
-            OpCode.JumpIfZeroMI,  0xD3, 0x06, // 0x018 Back to the top of the loop
+            OpCode.JumpIfZeroII,  0xD3, 0x06, // 0x018 Back to the top of the loop
             
             // ;End of loop
             OpCode.Halt,            //0x2C End
