@@ -16,7 +16,7 @@ dotnet run ../Files --debug
 ```shell
 cd YODA_TypeScript
 npm install
-npm start
+npm start ../Files debug
 ```
 
 
