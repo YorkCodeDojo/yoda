@@ -1,0 +1,8 @@
+[CONSTANTS]
+   pValue = 0xD0
+   fileNumber = 1 
+
+[PROGRAM]
+    LOAD fileNumber pValue
+    DEC pValue
+    SAVE fileNumber pValue 1

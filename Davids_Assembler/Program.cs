@@ -28,8 +28,8 @@ var commandInfo = new Dictionary<string, CommandInfo>
 };
 
 
-var lines = File.ReadAllLines("/Users/davidbetteridge/SimpleInstructionMachine/Davids_Assembler/exercise_06.txt")
-                .Select((t,i) => new SourceLine { LineNumber = i, Text = t.Trim()})
+var lines = File.ReadAllLines("/Users/davidbetteridge/SimpleInstructionMachine/Davids_Assembler/exercise_04.txt")
+                .Select((t,i) => new SourceLine { LineNumber = i, Text = RemoveInLineComment(t)})
                 .ToArray();
 
 // Pass 1,  strip out blank lines and comments
@@ -38,46 +38,76 @@ lines = lines
          .Where(l => !l.Text.StartsWith(';') )
          .ToArray();
 
-// Parse out the constants
-if (lines[0].Text != "[CONSTANTS]")
+var lineNumber = 0;
+
+var initialValues = new Dictionary<byte, byte>();
+if (lines[lineNumber].Text == "[INITIAL]")
 {
-   Console.Error.WriteLine("[CONSTANTS] block not found");
-   return;
-}
-
-var constants = new Dictionary<string, string>();
-var lineNumber = 1;
-while (lineNumber < lines.Length && lines[lineNumber].Text != "[PROGRAM]")
-{
-   var parts = lines[lineNumber].Text.Split("=");
-   if (parts.Length != 2)
-   {
-      Console.Error.WriteLine($"Line {lines[lineNumber].LineNumber}: Constant {lines[lineNumber]} could not be parsed");
-      return;
-   }
-
-   var key = parts[0].Trim();
-   var value = parts[1].Trim();
-
-   if (!constants.TryAdd(key, value))
-   {
-      Console.Error.WriteLine($"Line {lines[lineNumber].LineNumber}: The constant {key} has been defined multiple times");
-      return;
-   }
-
    lineNumber++;
+   
+   while (lineNumber < lines.Length && !lines[lineNumber].Text.StartsWith('['))
+   {
+      var parts = lines[lineNumber].Text.Split("=");
+      if (parts.Length != 2)
+      {
+         Console.Error.WriteLine($"Line {lines[lineNumber].LineNumber}: Initial value {lines[lineNumber]} could not be parsed");
+         return;
+      }
+
+      var key = parts[0].Trim();
+      var value = parts[1].Trim();
+
+      if (!initialValues.TryAdd(StringToByte(key), StringToByte(value)))
+      {
+         Console.Error.WriteLine($"Line {lines[lineNumber].LineNumber}: The initial value {key} has been defined multiple times");
+         return;
+      }
+
+      lineNumber++;
+   }
 }
 
-if (lineNumber >= lines.Length)
+// Parse out the constants
+var constants = new Dictionary<string, string>();
+if (lines[lineNumber].Text == "[CONSTANTS]")
 {
-   Console.Error.WriteLine("[PROGRAM] block not found");
-   return;
+   lineNumber++;
+   
+   while (lineNumber < lines.Length && !lines[lineNumber].Text.StartsWith('['))
+   {
+      var parts = lines[lineNumber].Text.Split("=");
+      if (parts.Length != 2)
+      {
+         Console.Error.WriteLine(
+            $"Line {lines[lineNumber].LineNumber}: Constant {lines[lineNumber]} could not be parsed");
+         return;
+      }
+
+      var key = parts[0].Trim();
+      var value = parts[1].Trim();
+
+      if (!constants.TryAdd(key, value))
+      {
+         Console.Error.WriteLine(
+            $"Line {lines[lineNumber].LineNumber}: The constant {key} has been defined multiple times");
+         return;
+      }
+
+      lineNumber++;
+   }
 }
 
 // Pass 2,  work out the locations of the labels
 var labels = new Dictionary<string, int>();
 var commands = new List<CommandLine>();
 var address = 0x00;
+
+if (lines[lineNumber].Text != "[PROGRAM]")
+{
+   Console.Error.WriteLine($"Line {lines[lineNumber].LineNumber}: [PROGRAM not found]");
+   return;
+}
+
 lineNumber++;
 
 while (lineNumber < lines.Length)
@@ -162,7 +192,7 @@ foreach (var command in commands)
 
       if (!command.Operands[i].StartsWith("0x"))
       {
-         command.Operands[i] = "0x" + int.Parse(command.Operands[i], NumberStyles.None).ToString();
+         command.Operands[i] = "0x" + int.Parse(command.Operands[i], NumberStyles.None);
       }
    }
 
@@ -176,12 +206,30 @@ foreach (var command in commands)
    contents.Add((byte)opcode);
    foreach (var o in command.Operands) 
       contents.Add(byte.Parse(o[2..], NumberStyles.HexNumber));
-   
 }
 
-await File.WriteAllBytesAsync("/Users/davidbetteridge/SimpleInstructionMachine/Files/boot", contents.ToArray());
+var fileContents = new byte[255];
+contents.CopyTo(fileContents, 0);
+
+// Initial values
+foreach (var iv in initialValues)
+   fileContents[iv.Key] = iv.Value;
+
+await File.WriteAllBytesAsync("/Users/davidbetteridge/SimpleInstructionMachine/Files/boot", fileContents);
 
 return;
+
+string RemoveInLineComment(string str) => str.Split(';')[0].Trim();
+
+byte StringToByte(string str)
+{
+   if (str.StartsWith("0x"))
+      return byte.Parse(str[2..], NumberStyles.HexNumber);
+   else if (str.StartsWith('\''))
+      return (byte)str[1]; //ASCII
+   else
+      return byte.Parse(str);
+}
 
 public record SourceLine
 {
