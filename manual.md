@@ -22,7 +22,7 @@ node ../Files debug
 
 ## Memory
 
-It has 256 memory locations (`0x0-0xFF`), each of which can hold a single byte.  This is laid out as below
+The computer has 256 memory locations (`0x0-0xFF`), each of which can hold a single byte.  This is laid out as below
 
 
 | Address      | Use                    |
@@ -45,17 +45,17 @@ Each command consists of an opcode and between 0 and 4 operands.  Opcodes and Op
 e.g.
 * The `halt` command (which causes the machine to stop) is defined by the opcode `0x00` and has no operands.
 
-* The `add` command is defined by its opcodes and is then followed by three operands.  The two numbers to add and the location for the result.
+* The `add` command is defined by it's opcode and is then followed by three operands.  The two numbers to add and the location for the result.
 
 ## Internal State
  
 Internally the machine tracks for three items of state.  These are not directly accessible to programmer.
 
-| Name                | Use                                    | Default Value |
-|---------------------|----------------------------------------|---------------|
-| Instruction Pointer | Address of the next command to execute | 0x00          |
-| Stack Pointer       | Address of the head of the stack       | 0xFC          |
-| Interrupts Enabled  | Controls if the interrupts will fire   | False         |
+| Name                     | Use                                    | Default Value |
+|--------------------------|----------------------------------------|---------------|
+| Instruction Pointer (IP) | Address of the next command to execute | 0x00          |
+| Stack Pointer (SP)       | Address of the head of the stack       | 0xFC          |
+| Interrupts Enabled (IF)  | Controls if the interrupts will fire   | False         |
 
 ## Instruction Pointer
 
@@ -116,6 +116,7 @@ Other related commands are
 * `CIF` which stands for Clear Interrupt Flag.  This switches off the processing of interrupts
 * `SIF` which stands for Set Interrupt Flag.  This resumes the processing of interrupts
 
+Note, by default the two addresses in the IV table are set to 0 and the interrupt flag is cleared.
 
 ## Screen Memory
 Bytes 0xF8 to 0xFD are mapped to the machines ASCII LCD display.
@@ -142,12 +143,12 @@ The `halt` command causes the machine to exit.
 ## Wait - OpCode 0x01
 The `wait` command causes the CPU to sleep for 1/10 of a second.
 
-## Ret - OpCode 0x02
+## Return - OpCode 0x02
 The `ret` command sets the instruction pointer to the address popped off the top of the stack.
 If the stack is empty then an underflow error is reported.
 This is commonly called at the end of an Interrupt Service Routine (ISR) or after previously calling `JumpWithReturn`
 
-## Nop - OpCode 0x03
+## No-op - OpCode 0x03
 Does nothing other than increase the instruction pointer.
 
 ## Sif - OpCode 0x04
@@ -160,11 +161,11 @@ Clears the interrupt flag.  This prevents interrupts from calling the ISRs.
 This is a 3 operand command which copies the specified values from memory to a file.
 The operands are
 
-| Name       | Description                            | Address Modes        |
-|------------|----------------------------------------|----------------------|
-| FileNumber | Number of the file to write 0-15       | Immediate or Direct  |
-| Location   | Address of the first location to write | Immediate or Direct  |
-| Length     | Number of bytes to write               | Immediate or Direct  |
+| Name       | Description                            | Address Modes       |
+|------------|----------------------------------------|---------------------|
+| FileNumber | Number of the file to write 0-15       | Immediate or Direct |
+| Location   | Address of the first location to write | Immediate or Direct |
+| Length     | Number of bytes to write               | Immediate or Direct |
 
 
 | OpCode | File Number | Start Location | Length    |

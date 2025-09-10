@@ -69,9 +69,9 @@ of this report is that maybe programming directly in bytes is the issue.
 One of their main recommendations is that
 
 Engineering teams should not manually create their boot files.  Instead, they should write applications to create these files.  These applications can then make 
-use of constants and helper functions to make the programs more readable.
+use of constants and/or helper functions to make the programs more readable.
 
-For example instead of writing the value 0 to a file,  the program should use the constant HALT
+For example instead of writing the value 0 to a file,  the program should use the constant HALT = 0x00
 
 
 regards
@@ -114,7 +114,9 @@ Hint: Read section on interrupts
 
 One of the other development teams is having trouble getting the `SUB` opcodes to work.  Can you provide them with a workaround?
 
+Given a file containing 2 bytes,  then would like to be able to replace it with a file containing the difference between the two values.
+
 
 ## Exercise 9
 
-Design an assembly language format for programming this machine.
+The flight center has been so impressed with your work that they would like you to design an assembly language format to make programming of these machines easier.
