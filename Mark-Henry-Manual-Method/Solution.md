@@ -78,7 +78,7 @@ Program completed successfully
 ```
 6. Success again (hopefully)! Again, it runs without errors, but not boot file has been supplied, so it's not really doing anything.
 
-## Step 1.3 - Exercise 1
+## Exercise 1
 Now it's time to generate a dummy boot file and check it works. We do this by doing the following from the terminal in the `Mark-Henry-Manual-Method` folder:
 ```shell
 cp boot-allzero boot-ex1
@@ -120,4 +120,55 @@ Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
 
 Program completed successfully
 ```
-~~~~
+## Exercise 2
+A blank boot file is now working, so time to throw a virtual spanner in the works to make sure the simulator operates as expected and generates error files when given a weird instruction. To set this up, we need to generate the boot file for example 2 from the template, then edit the file and insert the dodgy instruction as follows:
+```shell
+cp boot-allzero boot-ex2
+hexedit boot-ex2
+```
+Once opened, change the first byte in the boot file to `FF`, as per the instructions, then save the file and exit hexedit. Once back in the terminal, the following command was executed to copy the modified file to become the new boot file:
+```shell
+cp boot-ex2 boot
+```
+Now the boot file is prepared, time to test using dotnet first:
+```terminaloutput
+dotnet run ../Mark-Henry-Manual-Method/ --debug
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+Your program has crashed,  things aren't looking to good for the space craft.
+
+Unknown command 255
+Instruction Pointer: 0
+Opcode: 255
+
+A crash dump containing all the memory has been written to : crash_dump and crash_dump.txt
+```
+Then, with node:
+```terminaloutput
+npm start ../Mark-Henry-Manual-Method/ debug
+
+> simple-instruction-machine@1.0.0 start
+> ts-node main.ts ../Mark-Henry-Manual-Method/ debug
+
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
+Your program has crashed!
+Unknown command 255
+Instruction Pointer: 0
+Opcode: 255
+```
+In both cases, we received the correct output, i.e. opCode `0xFF` is invalid, both in dotnet and node and crash dumps were written into the appropriate locations detailing what was wrong :)
