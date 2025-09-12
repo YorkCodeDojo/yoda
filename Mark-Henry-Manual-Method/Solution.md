@@ -405,3 +405,169 @@ Program completed successfully
 00000001
 ```
 Success - node also does exactly as expected and we've now used 2 fuel units! Hope that won't compromise the launch too much... Although we could always refuel ;)
+
+## Exercise 6
+Time for some LCD fun - to get this to work will require the output for the LCD to be stored in a memory area, the LCD display to be set, then flag the display to refresh, wait, then clear the LCD refresh. Rinse and repeat until the display cycle completes the sequence.
+
+One way to do this would be to have a loop that cycles around until the next digit to be displayed is the `NULL` byte. Whilst sensible to do that, time is of the essence here and working out how many bytes are needed for jumping around isn't exactly conducive to saving time. Therefore, the simpler approach of telling the program to update the LCD with specific values 5 times makes for a quicker approach. Therefore the following pseudo-code for the program makes for a little easier working out the byte sequences for hexedit mangling later:
+```terminaloutput
+Address | Operation
+0x00    | Write_ID F8 C0    //  Write value from C0 to F8 (LCD Seg1)
+0x03    | Write_II FD 01    //  Write 0x01 to FD (set LCD Refresh)
+0x06    | Wait
+0x07    | Write_II FD 00    //  Write 0x00 to FD (clear LCD Refresh)
+
+0x0A    | Write_ID F8 C1    //  Write value from C1 to F8 (LCD Seg1)
+0x0D    | Write_II FD 01    //  Write 0x01 to FD (set LCD Refresh)
+0x10    | Wait
+0x11    | Write_II FD 00    //  Write 0x00 to FD (clear LCD Refresh)
+
+0x14    | Write_ID F8 C2    //  Write value from C2 to F8 (LCD Seg1)
+0x17    | Write_II FD 01    //  Write 0x01 to FD (set LCD Refresh)
+0x1a    | Wait
+0x1b    | Write_II FD 00    //  Write 0x00 to FD (clear LCD Refresh)
+
+0x1e    | Write_ID F8 C3    //  Write value from C3 to F8 (LCD Seg1)
+0x21    | Write_II FD 01    //  Write 0x01 to FD (set LCD Refresh)
+0x24    | Wait
+0x25    | Write_II FD 00    //  Write 0x00 to FD (clear LCD Refresh)
+
+0x28    | Write_ID F8 C4    //  Write value from C4 to F8 (LCD Seg1)
+0x2b    | Write_II FD 01    //  Write 0x01 to FD (set LCD Refresh)
+0x2e    | Wait
+0x2f    | Write_II FD 00    //  Write 0x00 to FD (clear LCD Refresh)
+0x32    | 0x00              //  Done
+~~~~
+0xC0    | 54321 (text data)
+```
+Translating that into physcial hex codes that we can use in hexedit would be as follows:
+```terminaloutput
+Address | Hex Codes
+0x00    | 32 F8 C0 33 FD 01 01 33 FD 00
+0x0A    | 32 F8 C1 33 FD 01 01 33 FD 00
+0x14    | 32 F8 C2 33 FD 01 01 33 FD 00
+0x1e    | 32 F8 C3 33 FD 01 01 33 FD 00
+0x28    | 32 F8 C4 33 FD 01 01 33 FD 00
+~~~~
+0xC0    | 35 34 33 32 31
+```
+Next up, we need a blank boot file, so we run `cp boot-all-zero boot-ex6` to create it, then `hexedit boot-ex6` to fill in the needed hex codes from the table above. Once done, we save and exit and check our boot file matches our expectations:
+```terminaloutput
+hd boot-ex6
+00000000  32 f8 c0 33 fd 01 01 33  fd 00 32 f8 c1 33 fd 01  |2..3...3..2..3..|
+00000010  01 33 fd 00 32 f8 c2 33  fd 01 01 33 fd 00 32 f8  |.3..2..3...3..2.|
+00000020  c3 33 fd 01 01 33 fd 00  32 f8 c4 33 fd 01 01 33  |.3...3..2..3...3|
+00000030  fd 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000040  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+000000c0  35 34 33 32 31 00 00 00  00 00 00 00 00 00 00 00  |54321...........|
+000000d0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000100
+```
+That looks good, so we copy that as the new boot file by running `cp boot-ex6 boot` and run via dotnet and node to check it does actually work as expected:
+```terminaloutput
+dotnet run ../Mark-Henry-Manual-Method/ --debug
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+00000000 Write::  53 into F8
+00000003 Write::  1 into FD
+---------------------
+| 5 |   |   |   |   |
+---------------------
+00000006 Wait::
+00000007 Write::  0 into FD
+0000000a Write::  52 into F8
+0000000d Write::  1 into FD
+---------------------
+| 4 |   |   |   |   |
+---------------------
+00000010 Wait::
+00000011 Write::  0 into FD
+00000014 Write::  51 into F8
+00000017 Write::  1 into FD
+---------------------
+| 3 |   |   |   |   |
+---------------------
+0000001a Wait::
+0000001b Write::  0 into FD
+0000001e Write::  50 into F8
+00000021 Write::  1 into FD
+---------------------
+| 2 |   |   |   |   |
+---------------------
+00000024 Wait::
+00000025 Write::  0 into FD
+00000028 Write::  49 into F8
+0000002b Write::  1 into FD
+---------------------
+| 1 |   |   |   |   |
+---------------------
+0000002e Wait::
+0000002f Write::  0 into FD
+
+
+Program completed successfully
+
+npm start ../Mark-Henry-Manual-Method/ debug
+
+> simple-instruction-machine@1.0.0 start
+> ts-node main.ts ../Mark-Henry-Manual-Method/ debug
+
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
+0 Write:: 53 into f8
+3 Write:: 1 into fd
+---------------------
+| 5 |   |   |   |   |
+---------------------
+6 Wait::
+7 Write:: 0 into fd
+a Write:: 52 into f8
+d Write:: 1 into fd
+---------------------
+| 4 |   |   |   |   |
+---------------------
+10 Wait::
+11 Write:: 0 into fd
+14 Write:: 51 into f8
+17 Write:: 1 into fd
+---------------------
+| 3 |   |   |   |   |
+---------------------
+1a Wait::
+1b Write:: 0 into fd
+1e Write:: 50 into f8
+21 Write:: 1 into fd
+---------------------
+| 2 |   |   |   |   |
+---------------------
+24 Wait::
+25 Write:: 0 into fd
+28 Write:: 49 into f8
+2b Write:: 1 into fd
+---------------------
+| 1 |   |   |   |   |
+---------------------
+2e Wait::
+2f Write:: 0 into fd
+
+
+Program completed successfully
+```
+
+That all looks good for the end of exercise 6. No more time to do any further exercises on the night
