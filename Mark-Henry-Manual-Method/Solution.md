@@ -172,3 +172,82 @@ Instruction Pointer: 0
 Opcode: 255
 ```
 In both cases, we received the correct output, i.e. opCode `0xFF` is invalid, both in dotnet and node and crash dumps were written into the appropriate locations detailing what was wrong :)
+
+## Exercise 3
+In order to complete this exercise, we debated which of the opCodes representing the SaveToFile instructions might be best to use. As the exercise hints strongly which opCode might be the one to use, we opted for the Immediate/Immediate/Immediate option, as this would allow us to specify the file, a location in memory for the data and a length all in one "easy" instruction. To accomplish this, we created the new boot file, then edited the file using hexedit again:
+```shell
+cp boot-allzero boot-ex3
+hexedit boot-ex3
+```
+Once inside hexedit, starting at address 0, the following entries were input:
+`17`, `00`, `20`, `05`, `01`.
+Now the program is in-place, using hexedit again, this time at address 0x20, the following entries were made: `05`, `04`, `03`, `02`, `01`. Once completed, the file was saved and hexedit was exited. Now we have the file,time to do a quick check on the contents:
+```terminaloutput
+hexdump boot-ex3
+0000000 0017 0520 0001 0000 0000 0000 0000 0000
+0000010 0000 0000 0000 0000 0000 0000 0000 0000
+0000020 0405 0203 0001 0000 0000 0000 0000 0000
+0000030 0000 0000 0000 0000 0000 0000 0000 0000
+*
+0000100
+```
+Hmm... That doesn't look right! A quick review of the `man` page for hexdump hints why: the default output groups contents into pairs of bytes, which means the values are going to appear grouped as if they were 16-bit values. Time to try a different output option:
+```terminaloutput
+hexdump -C boot-ex3
+00000000  17 00 20 05 01 00 00 00  00 00 00 00 00 00 00 00  |.. .............|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000020  05 04 03 02 01 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000100
+```
+Ok - that looks much better. All bytes are being displayed sequentially and it also tries to convert the values into ASCII text as well! The prepared boot file was then copied as the new boot file using:
+```shell
+cp boot-ex3 boot
+```
+Now the boot file is ready, time to test it again, dotnet first, followed by node:
+```terminaloutput
+dotnet run ../Mark-Henry-Manual-Method/ --debug
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+00000000 SaveToFile:: Writing 5 bytes starting at 00000020 to file 0.
+00000004 Wait::
+
+
+Program completed successfully
+
+
+npm start ../Mark-Henry-Manual-Method/ debug
+
+> simple-instruction-machine@1.0.0 start
+> ts-node main.ts ../Mark-Henry-Manual-Method/ debug
+
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
+0 SaveToFile:: Writing 5 bytes from 20.
+4 Wait::
+
+
+Program completed successfully
+```
+Looks like the program has done as requested, so time to check it:
+```terminaloutput
+hexdump -C ../Mark-Henry-Manual-Method/0
+00000000  05 04 03 02 01                                    |.....|
+00000005
+```
+Looks like we have the right contents in the specified file, so we'll count that as successful!
