@@ -251,3 +251,70 @@ hexdump -C ../Mark-Henry-Manual-Method/0
 00000005
 ```
 Looks like we have the right contents in the specified file, so we'll count that as successful!
+
+## Exercise 4
+As this looks like a very similar exercise as the previous one, we re-used the previous file, copying it to provide the boot-ex4 file we needed, then edited it:
+```shell
+cp boot-ex3 boot-ex4
+hexedit boot-ex4
+```
+Inside hexedit, instead of using the hex editing facility, time to use the character side - that'll make life so much easier! Once there, at address 0x20, the string `5 4 3 2 1 LIFTOFF` was entered, noting that it needed 17 bytes (0x11 hex) to store it. Now the string is entered, time alter the opCode instructions so they perform the correct operation: switching back to the hex side, address 0x01 was altered to `09` and address 0x03 was altered to `11`, ensuring the output is directed to file 9 and has a length of 17 bytes. Saving the file in hexedit and quitting, we checked the file for correctness:
+```terminaloutput
+hexdump -C boot-ex4
+00000000  17 09 20 11 01 00 00 00  00 00 00 00 00 00 00 00  |.. .............|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000020  35 20 34 20 33 20 32 20  31 20 4c 49 46 54 4f 46  |5 4 3 2 1 LIFTOF|
+00000030  46 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |F...............|
+00000040  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000100
+```
+That looks good, so time to copy it as the boot file:
+```shell
+cp boot-ex4 boot
+```
+Now, test again with dotnet and node:
+```terminaloutput
+dotnet run ../Mark-Henry-Manual-Method/ --debug
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+00000000 SaveToFile:: Writing 17 bytes starting at 00000020 to file 9.
+00000004 Wait::
+
+
+Program completed successfully
+
+
+npm start ../Mark-Henry-Manual-Method/ debug
+
+> simple-instruction-machine@1.0.0 start
+> ts-node main.ts ../Mark-Henry-Manual-Method/ debug
+
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
+0 SaveToFile:: Writing 17 bytes from 20.
+4 Wait::
+
+
+Program completed successfully
+```
+As the output should be a text file, we checked the output using the following:
+```terminaloutput
+cat 9.txt 
+5 4 3 2 1 LIFTOFF
+```
+Again, that looks good, so we'll take that as a success :)
