@@ -318,3 +318,90 @@ cat 9.txt
 5 4 3 2 1 LIFTOFF
 ```
 Again, that looks good, so we'll take that as a success :)
+
+## Exercise 5
+After looking at the description, we decided to make this a "2 boot file" approach - one to actually write the fuel quantity to file 1, then another to decrement the fuel value. To start with, we created the two new boot files to be edited using the following commands:
+```shell
+cp boot-allzero boot-refuel123
+cp boot-allzero boot-ex5
+```
+Looking at the instructions, the first step of writing a program to "refuel" should be very similar to writing output in earlier exercises, so we'll re-use the same methods. Starting with the command:
+```shell
+hexedit boot-refuel123
+```
+We then entered, starting from address 0x00, the following: `17`, `01`, `20`, `01`, then at address 0x20, the value `7B` (hex for 123 decimal) was entered and the file saved and hexedit quit. Checking the file works as expected, the following was executed:
+```terminaloutput
+cp boot-refuel123 boot
+
+dotnet run ../Mark-Henry-Manual-Method/ --debug && hexdump -C ../Mark-Henry-Manual-Method/1
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+00000000 SaveToFile:: Writing 1 bytes starting at 00000020 to file 1.
+
+
+Program completed successfully
+00000000  7b                                                |{|
+00000001
+```
+Now we have the "refuel" program working as expected, time to move on to the program to read the fuel level, decrement it, then write out the new value. The plan is to:
+1. Use one of the LoadFromFile opCodes to load the current fuel value into a "data area" in the simulator's memory
+2. Decrement the value in the "data area"
+3. Write out the new value to the file
+4. Use a "high" memory address that sits between the end of the program and under the stack area. For no real reason, address 0xC0 was used, as it fits those requirements pretty well.
+
+The decision was made to use the "immediate" memory access methods as these work very nicely for us. Running `hexedit boot-ex5` allows us to enter the following hex values for the program: `23`, `01`, `C0`, `71`, `C0`, `17`, `01`, `C0`, `01`. Saving the file and quitting hexedit, the following commands were executed:
+```terminaloutput
+cp boot-ex5 boot
+
+dotnet run ../Mark-Henry-Manual-Method/ --debug && hexdump -C ../Mark-Henry-Manual-Method/1
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory has been initialised using the boot file (../Mark-Henry-Manual-Method/boot).
+00000000 LoadFromFile:: Reading from file 1 into 000000c0.
+00000003 Dec::  Decreasing value in 000000c0 from 123 to 122
+00000005 SaveToFile:: Writing 1 bytes starting at 000000c0 to file 1.
+
+
+Program completed successfully
+00000000  7a                                                |z|
+00000001
+```
+All looking good so far - dotnet opens the file, decrements and writes it back. Time for node to do the same:
+```terminaloutput
+npm start ../Mark-Henry-Manual-Method/ debug && hexdump -C ../Mark-Henry-Manual-Method/1
+
+> simple-instruction-machine@1.0.0 start
+> ts-node main.ts ../Mark-Henry-Manual-Method/ debug
+
+Starting landing computer running York's Obscenely Dumb Architecture (YODA) - Release Build 12x.11g-34 + Anti-gravity module
+Folder Path: ../Mark-Henry-Manual-Method/
+
+Connecting to Engine Control System.... SUCCESS!
+Connecting to Landing Control System.... SUCCESS!
+Connecting to Interplanetary Communication System.... SUCCESS!
+All systems are GO!
+
+Memory initialised using boot file (../Mark-Henry-Manual-Method/boot).
+0 LoadFromFile:: Reading into c0.
+3 Dec:: 122 -> 121
+5 SaveToFile:: Writing 1 bytes from c0.
+
+
+Program completed successfully
+00000000  79                                                |y|
+00000001
+```
+Success - node also does exactly as expected and we've now used 2 fuel units! Hope that won't compromise the launch too much... Although we could always refuel ;)
