@@ -24,7 +24,8 @@ internal static class Program
 			Directory.CreateDirectory(FilePath);
 		
 		// Exercise1();
-		Exercise2();
+		// Exercise2();
+		Exercise3();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -68,5 +69,21 @@ internal static class Program
 	{
 		WriteFile("ex2", [0xFF]);
 		RunVm("ex2");
+	}
+	
+	private static void Exercise3()
+	{
+		//	Two parts to this... the program itself and its data
+		//	Program writes to file 0, from address 0x20 for 5 bytes
+		byte[] program = [OpCode.SaveToFileIII, 0, 0x20, 5];
+		//	Data to be stored at byte 0x20
+		byte[] data = [5, 4, 3, 2, 1];
+
+		//	Copy program and data to a temp buffer to pass to the VM Runner
+		var buffer = new byte[64];
+		program.CopyTo(buffer, 0);
+		data.CopyTo(buffer, 0x20);
+		WriteFile("ex3", buffer);
+		RunVm("ex3");
 	}
 }
