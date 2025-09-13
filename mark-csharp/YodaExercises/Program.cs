@@ -48,13 +48,18 @@ internal static class Program
 			throw new FileNotFoundException($"File {fileName} not found.");
 		File.Copy(fileName, Path.Combine(FilePath, "boot"), true);
 	}
+
+	private static void RunVm(string program)
+	{
+		MakeFileBoot(program);
+
+		var vm = new VirtualMachine(true);
+		vm.Run(FilePath).Wait();
+	}
 	
 	private static void Exercise1()
 	{
 		WriteFile("ex1", null);
-		MakeFileBoot("ex1");
-
-		var vm = new VirtualMachine(true);
-		vm.Run(FilePath).Wait();
+		RunVm("ex1");
 	}
 }
