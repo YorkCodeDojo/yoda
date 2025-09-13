@@ -23,7 +23,8 @@ internal static class Program
 		if(!Directory.Exists(FilePath))
 			Directory.CreateDirectory(FilePath);
 		
-		Exercise1();
+		// Exercise1();
+		Exercise2();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -61,5 +62,11 @@ internal static class Program
 	{
 		WriteFile("ex1", null);
 		RunVm("ex1");
+	}
+
+	private static void Exercise2()
+	{
+		WriteFile("ex2", [0xFF]);
+		RunVm("ex2");
 	}
 }
