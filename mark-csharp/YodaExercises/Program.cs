@@ -25,7 +25,8 @@ internal static class Program
 
 		// Exercise1();
 		// Exercise2();
-		Exercise3();
+		// Exercise3();
+		Exercise4();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -85,5 +86,18 @@ internal static class Program
 		data.CopyTo(buffer, 0x20);
 		WriteFile("ex3", buffer);
 		RunVm("ex3");
+	}
+
+	private static void Exercise4()
+	{
+		byte[] message = "5 4 3 2 1 LIFTOFF".ToCharArray().Select(x => (byte)x).ToArray();
+		byte[] program = [OpCode.SaveToFileIII, 9, 0x20, (byte)message.Length];
+
+		//	Copy program and message to a temp buffer to pass to the VM Runner
+		var buffer = new byte[64];
+		program.CopyTo(buffer, 0);
+		message.CopyTo(buffer, 0x20);
+		WriteFile("ex4", buffer);
+		RunVm("ex4");
 	}
 }
