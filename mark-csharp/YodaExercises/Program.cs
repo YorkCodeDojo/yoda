@@ -5,24 +5,24 @@ namespace YodaExercises;
 
 internal static class Program
 {
-	private static string FilePath = null!;
-	
+	private static string _filePath = null!;
+
 	internal static void Main(string[] args)
 	{
 		//	Get individual path parts to the assembly and where the assembly is in the list
-		var pathParts = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+		var pathParts = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "")
 			.Split(Path.DirectorySeparatorChar)
 			.ToList();
 		var assemblyIndex = pathParts.IndexOf(nameof(YodaExercises));
 		//	Reassemble the paths up to the point of the assembly name
 		var basePath = string.Join(Path.DirectorySeparatorChar, pathParts[..assemblyIndex]);
 		//	Append Files to the path - this is the location of the boot file area
-		FilePath = Path.Combine(basePath, "Files");
+		_filePath = Path.Combine(basePath, "Files");
 
 		//	Make sure the Files folder exists
-		if(!Directory.Exists(FilePath))
-			Directory.CreateDirectory(FilePath);
-		
+		if (!Directory.Exists(_filePath))
+			Directory.CreateDirectory(_filePath);
+
 		// Exercise1();
 		// Exercise2();
 		Exercise3();
@@ -40,15 +40,15 @@ internal static class Program
 		if (contents?.Length > 0)
 			contents.CopyTo(buffer, 0);
 		//	Dump the buffer to the specified file, ensuring we only retain the name of the file and place it correctly
-		File.WriteAllBytes(Path.Combine(FilePath, Path.GetFileName(name)), buffer);
+		File.WriteAllBytes(Path.Combine(_filePath, Path.GetFileName(name)), buffer);
 	}
 
 	private static void MakeFileBoot(string name)
 	{
-		var fileName = Path.Combine(FilePath, Path.GetFileName(name));
-		if(!File.Exists(fileName))
+		var fileName = Path.Combine(_filePath, Path.GetFileName(name));
+		if (!File.Exists(fileName))
 			throw new FileNotFoundException($"File {fileName} not found.");
-		File.Copy(fileName, Path.Combine(FilePath, "boot"), true);
+		File.Copy(fileName, Path.Combine(_filePath, "boot"), true);
 	}
 
 	private static void RunVm(string program)
@@ -56,9 +56,9 @@ internal static class Program
 		MakeFileBoot(program);
 
 		var vm = new VirtualMachine(true);
-		vm.Run(FilePath).Wait();
+		vm.Run(_filePath).Wait();
 	}
-	
+
 	private static void Exercise1()
 	{
 		WriteFile("ex1", null);
@@ -70,7 +70,7 @@ internal static class Program
 		WriteFile("ex2", [0xFF]);
 		RunVm("ex2");
 	}
-	
+
 	private static void Exercise3()
 	{
 		//	Two parts to this... the program itself and its data
