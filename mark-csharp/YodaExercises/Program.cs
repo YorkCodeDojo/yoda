@@ -27,7 +27,8 @@ internal static class Program
 		// Exercise2();
 		// Exercise3();
 		// Exercise4();
-		Exercise5();
+		// Exercise5();
+		Exercise6();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -111,11 +112,12 @@ internal static class Program
 		WriteFile("refuelFile1", buffer);
 		RunVm("refuelFile1");
 	}
-	
+
 	private static void Exercise5()
 	{
 		RefuelFile1(123);
-		byte[] program = [
+		byte[] program =
+		[
 			OpCode.LoadFromFileII, 1, 0x80,
 			OpCode.DecI, 0x80,
 			OpCode.SaveToFileIII, 1, 0x80, 1
@@ -124,5 +126,41 @@ internal static class Program
 		program.CopyTo(buffer, 0);
 		WriteFile("ex5", buffer);
 		RunVm("ex5");
+	}
+
+	private static void Exercise6()
+	{
+		byte[] message = "54321".ToCharArray().Select(x => (byte)x).ToArray();
+		byte[] program =
+		[
+			OpCode.WriteIM, KnownMemory.LCD_0, 0x80,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			OpCode.Wait,
+			OpCode.WriteIM, KnownMemory.LCD_0, 0x81,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			OpCode.Wait,
+			OpCode.WriteIM, KnownMemory.LCD_0, 0x82,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			OpCode.Wait,
+			OpCode.WriteIM, KnownMemory.LCD_0, 0x83,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			OpCode.Wait,
+			OpCode.WriteIM, KnownMemory.LCD_0, 0x84,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			OpCode.Wait,
+		];
+
+		//	Copy program and message to a temp buffer to pass to the VM Runner
+		var buffer = new byte[1 + byte.MaxValue];
+		program.CopyTo(buffer, 0);
+		message.CopyTo(buffer, 0x80);
+
+		WriteFile("ex6", buffer);
+		RunVm("ex6");
 	}
 }
