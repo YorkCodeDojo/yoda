@@ -26,7 +26,8 @@ internal static class Program
 		// Exercise1();
 		// Exercise2();
 		// Exercise3();
-		Exercise4();
+		// Exercise4();
+		Exercise5();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -99,5 +100,29 @@ internal static class Program
 		message.CopyTo(buffer, 0x20);
 		WriteFile("ex4", buffer);
 		RunVm("ex4");
+	}
+
+	private static void RefuelFile1(byte refuelAmount)
+	{
+		byte[] program = [OpCode.SaveToFileIII, 1, 0x20, 1];
+		var buffer = new byte[64];
+		program.CopyTo(buffer, 0);
+		buffer[0x20] = refuelAmount;
+		WriteFile("refuelFile1", buffer);
+		RunVm("refuelFile1");
+	}
+	
+	private static void Exercise5()
+	{
+		RefuelFile1(123);
+		byte[] program = [
+			OpCode.LoadFromFileII, 1, 0x80,
+			OpCode.DecI, 0x80,
+			OpCode.SaveToFileIII, 1, 0x80, 1
+		];
+		var buffer = new byte[64];
+		program.CopyTo(buffer, 0);
+		WriteFile("ex5", buffer);
+		RunVm("ex5");
 	}
 }
