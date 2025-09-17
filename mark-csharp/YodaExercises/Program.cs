@@ -30,7 +30,8 @@ internal static class Program
 		// Exercise4();
 		// Exercise5();
 		// Exercise6();
-		Exercise7();
+		// Exercise7();
+		Exercise8();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -259,5 +260,31 @@ internal static class Program
 
 		WriteFile("ex7", buffer);
 		RunVm("ex7");
+	}
+
+	private static void Exercise8()
+	{
+		//	Load values to this location
+		byte loadArea = 0x80;
+		//	Write result to this location
+		byte saveArea = 0x90;
+		//	Define the file number to read values from		
+		byte valuesFile = 2;
+		//	Define the file number to write the result to
+		byte resultFile = 3;
+		byte[] program =
+		[
+			//	Load from file
+			OpCode.LoadFromFileII, valuesFile, loadArea,
+			//	Subtract, store result in area to be saved
+			OpCode.SubMMI, loadArea, (byte)(loadArea + 1), saveArea,
+			//	Save the result to the file
+			OpCode.SaveToFileIII, resultFile, saveArea, 1
+		];
+
+		byte[] buffer = new byte[1 + program.Length];
+		program.CopyTo(buffer, 0);
+		WriteFile("ex8", buffer);
+		RunVm("ex8");
 	}
 }
