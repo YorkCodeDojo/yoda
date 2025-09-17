@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Xml.Serialization;
 using SimpleInstructionMachine;
 
 namespace YodaExercises;
@@ -28,7 +29,8 @@ internal static class Program
 		// Exercise3();
 		// Exercise4();
 		// Exercise5();
-		Exercise6();
+		// Exercise6();
+		Exercise7();
 	}
 
 	private static void WriteFile(string name, byte[]? contents)
@@ -162,5 +164,100 @@ internal static class Program
 
 		WriteFile("ex6", buffer);
 		RunVm("ex6");
+	}
+
+	private static void Exercise7()
+	{
+		//	Spaces that can be used to blank the screen area
+		byte[] spaces = "     "u8.ToArray();
+		byte leftVector = 0x40;
+		byte rightVector = 0x60;
+		//	If the position has moved, then a value here will indicate the screen needs a refresh
+		byte movementCheck = 0x90;
+		byte currentPosition = 0x91;
+		byte blankScreen = 0x80;
+
+		byte[] program =
+		[
+			//	0x00
+			//	Write the spaces to file 8 so LCD segments can be overwritten simultaneously.
+			OpCode.SaveToFileIII, 8, blankScreen, (byte)spaces.Length,
+			//	0x04			
+			OpCode.Sif,
+			//	0x05
+			OpCode.Wait,
+			//	0x06
+			OpCode.JumpIfZeroII, movementCheck, 0x04,
+			//	0x09 - reset movement check
+			OpCode.WriteII, movementCheck, 0x00,
+			//	0x0C - write spaces into all LCD segments 
+			OpCode.LoadFromFileII, 8, KnownMemory.LCD_0,
+			//	0x0F - write the dash to LCD at the correct position
+			OpCode.WriteMI, currentPosition, (byte)'-',
+			//	0x12 - refresh LCD
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x01,
+			//	0x15 - reset LCD refresh
+			OpCode.WriteII, KnownMemory.ControlFlags, 0x00,
+			//	0x18 - loop from start of main loop
+			OpCode.JumpIfZeroII, movementCheck, 0x04,
+			//	0x1B
+		];
+
+		//	Interrupt handler for the left arrow keypress
+		byte[] leftInterrupt =
+		[
+			//	+0x00
+			//	Do not interrupt the interrupt
+			OpCode.Cif,
+			//	+0x01
+			//	Check if current position is far-left, store result in movementCheck location
+			OpCode.SubMII, currentPosition, KnownMemory.LCD_0, movementCheck,
+			//	+0x05
+			//	If movementCheck location is zero, do not perform any movement
+			OpCode.JumpIfZeroII, movementCheck, (byte)(leftVector + 0x0A),
+			//	+0x08
+			//	Move one position left
+			OpCode.DecI, currentPosition,
+			//	+0x0A
+			OpCode.Ret,
+		];
+
+		//	Interrupt handler for the right arrow keypress
+		byte[] rightInterrupt =
+		[
+			//	+0x00
+			//	Do not interrupt the interrupt
+			OpCode.Cif,
+			//	+0x01
+			OpCode.SubMII, currentPosition, KnownMemory.LCD_4, movementCheck,
+			//	+0x05
+			OpCode.JumpIfZeroII, movementCheck, (byte)(rightVector + 0x0A),
+			//	+0x08
+			//	Move one position right
+			OpCode.IncI, currentPosition,
+			//	+0x0A
+			OpCode.Ret,
+		];
+
+		//	Copy program and data to a temp buffer to pass to the VM Runner
+		var buffer = new byte[1 + byte.MaxValue];
+		//	Copy main program loop
+		program.CopyTo(buffer, 0);
+		//	Copy left arrow interrupt routine
+		leftInterrupt.CopyTo(buffer, leftVector);
+		//	Copy right arrow interrupt routine
+		rightInterrupt.CopyTo(buffer, rightVector);
+
+		//	Initial signal is we have "moved" into the central location
+		buffer[movementCheck] = 0x01;
+		//	Set current position as central LCD segment
+		buffer[currentPosition] = KnownMemory.LCD_2;
+		//	Write the spaces into a "high" memory area
+		spaces.CopyTo(buffer, blankScreen);
+		buffer[KnownMemory.IVT_LEFT_ARROW] = leftVector;
+		buffer[KnownMemory.IVT_RIGHT_ARROW] = rightVector;
+
+		WriteFile("ex7", buffer);
+		RunVm("ex7");
 	}
 }
