@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mark-csharp", "mark-csharp", "{5C3CA1F0-BEFB-913A-467C-9BC8E8763114}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YodaExercises", "mark-csharp\YodaExercises\YodaExercises.csproj", "{8D8C9463-C990-4962-996E-1EEE84C8441E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "YODA", "YODA", "{53427892-8E56-C6A7-C67E-0E35C96E3AED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleInstructionMachine", "YODA\SimpleInstructionMachine.csproj", "{7B6C7992-E188-49CD-AC66-6B959606752F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|x64.Build.0 = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Debug|x86.Build.0 = Debug|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|x64.ActiveCfg = Release|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|x64.Build.0 = Release|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|x86.ActiveCfg = Release|Any CPU
+		{8D8C9463-C990-4962-996E-1EEE84C8441E}.Release|x86.Build.0 = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|x64.Build.0 = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Debug|x86.Build.0 = Debug|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|x64.ActiveCfg = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|x64.Build.0 = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B6C7992-E188-49CD-AC66-6B959606752F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8D8C9463-C990-4962-996E-1EEE84C8441E} = {5C3CA1F0-BEFB-913A-467C-9BC8E8763114}
+		{7B6C7992-E188-49CD-AC66-6B959606752F} = {53427892-8E56-C6A7-C67E-0E35C96E3AED}
+	EndGlobalSection
+EndGlobal

@@ -84,7 +84,9 @@ public class VirtualMachine(bool Debug)
                         Add(opCode);
                         continue;
                     case Mask.Sub:
-                        throw new Exception("Due to lack of time this method has not been implemented");
+                        // throw new Exception("Due to lack of time this method has not been implemented");
+                        Sub(opCode);
+                        continue;
                     case Mask.Inc:
                         Inc(opCode);
                         continue;
@@ -405,4 +407,18 @@ public class VirtualMachine(bool Debug)
         
         return  _memory[reference];
     } 
+    
+    /// <summary>
+    /// Sub LHS RHS Total
+    /// </summary>
+    private void Sub(int opCode)
+    {
+        var lhs = Read(_instructionPointer + 1, opCode, 2);
+        var rhs = Read(_instructionPointer + 2, opCode, 1);
+        var location = Read(_instructionPointer + 3, opCode, 0);
+
+        if (Debug) Console.WriteLine($"{_instructionPointer:x4} Sub::  {lhs} - {rhs} = {lhs - rhs} ==> {location:x2}");
+        _memory[location] = (byte)(lhs - rhs); // Can overflow
+        _instructionPointer += 4;
+    }
 }
